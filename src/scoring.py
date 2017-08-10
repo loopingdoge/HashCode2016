@@ -167,7 +167,7 @@ file.close()
 
 
 # Google output parsing
-file_name	= sys.argv[2]
+file_name = sys.argv[2]
 
 file  = open('./in/' + file_name + ".in", "r")
 
@@ -176,12 +176,16 @@ defs = file.readline().split()
 COMMANDS_NUM = int(defs[0])
 dronesList = []      #drones array
 
+for d in range(D):
+    drone = Drone(Location(0, 0))
+    dronesList = dronesList + [drone]
+
 for c in range(COMMANDS_NUM):
     defs = file.readline().split()
     droneID = int(defs[0])
     tag = defs[1] # 'L': Load, 'D': Deliver, 'W': Wait
     data = int(defs[2]) # 'L': WharehouseID, 'D': OrderID, 'W': #turns
-    if tag is 'L' or tag is 'D':
+    if tag is 'L' or tag is 'D' or tag is 'U':
         product = int(defs[3])
         quantity = int(defs[4])
         command = Command(tag, data, product, quantity)
@@ -189,10 +193,6 @@ for c in range(COMMANDS_NUM):
     else:
         # wait case
         command = Command(tag, data, None, None)
-
-    if len(dronesList) == droneID:        # the drone is not in the array yet
-        drone = Drone(Location(0, 0))
-        dronesList = dronesList + [drone]
     dronesList[droneID].pushCommand(command)
 
 file.close()
@@ -227,10 +227,7 @@ for i,order in enumerate(orders):
     products = {}
 
     for p in range(len(order['items'])):
-        if products.get(order['items'][p]) == None:
-            products[order['items'][p]] = 1
-        else:
-            products[order['items'][p]] +=1
+        products[order['items'][p]] = products.get(order['items'][p], 0) + 1
 
     o = Order(Location(r,c), products)
     ordersList = ordersList + [o]
