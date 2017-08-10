@@ -48,15 +48,17 @@ plan(State, Goal, _, Moves, MaxTurns) :-
     UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
-    open('actions.txt', write, Stream),
-    export_moves(Moves, Stream),
-    close(Stream),
+    %open('actions.txt', write, Stream),
+    %export_moves(Moves, Stream),
+    %close(Stream),
     reverse_print_stack(Moves), nl,
     write('Turns: '), write(UsedTurns).
 
 plan(State, Goal, Been_list, Moves, MaxTurns) :-
     %% write(State), nl, nl,
     %% write(Been_list), nl,
+    turns_used(Moves, UsedTurns),
+    UsedTurns #=< MaxTurns,
     move(State, Name, Preconditions, Actions),
     conditions_met(Preconditions, State),
     change_state(State, Actions, Child_state),

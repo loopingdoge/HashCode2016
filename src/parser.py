@@ -18,9 +18,9 @@ O 		= 0				# #Orders
 warehouses = []
 
 for w in range(W):
-    coords 	= [ int(x) for x in file.readline().split() ]
-    items 	= file.readline().split()
-    warehouses.append({ 'coords': coords, 'items': items})
+	coords 	= [ int(x) for x in file.readline().split() ]
+	items 	= file.readline().split()
+	warehouses.append({ 'coords': coords, 'items': items})
 
 O = int(file.readline())
 
@@ -38,6 +38,8 @@ file.close()
 # PROLOG
 outfile = open("./out/" + file_name + ".pl", "w")
 items = []
+itemsWithWarehouses = []
+lastItemId = 0
 
 for d in range(D):
 	# drone(drone0).
@@ -50,6 +52,9 @@ for w in range(W):
 	for n in range(P):
 		products += ['product{}'.format(n)] * int(warehouse['items'][n])
 	items += products
+	for p in products:
+		itemsWithWarehouses.append({ 'id': "item{}".format(lastItemId), 'warehouse': "warehouse{}".format(w) })
+		lastItemId = lastItemId + 1
 	products = reduce((lambda x, y: x + ',' + y), products)	
 	r = warehouse['coords'][0]
 	c = warehouse['coords'][1]
@@ -72,6 +77,32 @@ for o in range(O):
 for id, item  in enumerate(items):
 	outfile.write("item(item{}, {}).\n".format(id, item))
 
+outfile.write("\n\n")
+outfile.write("%%\n")
+outfile.write("%%Initial State\n")
+outfile.write("%%\n")
+
+outfile.write("[\n")
+for d in range(D):
+	outfile.write("    at(drone{}, coord(0, 0)),\n".format(d))
+	outfile.write("    weighs(drone{}, 0),\n".format(d))
+for n, itemWithW in enumerate(itemsWithWarehouses):
+	outfile.write("    at({}, {}){}\n".format(itemWithW['id'], itemWithW['warehouse'], "" if n == len(itemsWithWarehouses)-1 else ","))
+outfile.write("]")
+
+outfile.write("\n\n")
+outfile.write("%%\n")
+outfile.write("%%Final State\n")
+outfile.write("%%\n")
+
+outfile.write("[\n")
+for o in range(O):
+	order = orders[o]
+	products = ['product{0}'.format(i) for i in order['items'] ]
+	for p in range(len(products)):
+		outfile.write("    at(product{}, order{}){}\n".format(p, o, "" if o == O-1 and p == len(products)-1 else ","))
+
+outfile.write("]")
+
+
 outfile.close()
-
-
