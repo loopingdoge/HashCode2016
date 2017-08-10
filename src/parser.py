@@ -1,3 +1,5 @@
+import os
+import errno
 import sys
 from functools import reduce
 
@@ -36,7 +38,16 @@ for o in range(O):
 file.close() 
 
 # PROLOG
-outfile = open("./out/" + file_name + ".pl", "w")
+
+outfile_name = "./out/" + file_name + ".pl"
+if not os.path.exists(os.path.dirname(outfile_name)):
+    try:
+        os.makedirs(os.path.dirname(outfile_name))
+    except OSError as exc: # Guard against race condition
+        if exc.errno != errno.EEXIST:
+            raise
+
+outfile = open(outfile_name, "w")
 items = []
 itemsWithWarehouses = []
 lastItemId = 0
