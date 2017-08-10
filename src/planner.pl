@@ -17,16 +17,45 @@ empty_stack([]).
 
 stack(E, S, [E|S]).
 
-plan(State, Goal, _, Moves) :-  
-    subset(Goal, State), 
-    write('moves are'), nl,
-	open('actions.txt', write, Stream),
-	export_moves(Moves, Stream),
-	close(Stream),
-    reverse_print_stack(Moves).
+count_drone_turns([], _, Turns) :- Turns is 0.
+count_drone_turns([_|T], Drone, Turns) :-
+    count_drone_turns(T, Drone, OtherTurns),
+    Turns is OtherTurns.
+count_drone_turns([load(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
+    count_drone_turns(T, Drone, OtherTurns),
+    Turns is MoveTurns + OtherTurns.
+count_drone_turns([deliver(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
+    count_drone_turns(T, Drone, OtherTurns),
+    Turns is MoveTurns + OtherTurns.
+count_drone_max_turns(Moves, Drone, Turns) :-
+    findall(T, count_drone_turns(Moves, Drone, T), TurnsList),
+    sort(TurnsList, SortedTurns),
+    reverse(SortedTurns, [Turns|_]).
+turns_used(Moves, Turns) :-
+    findall(T, (drone(Drone), count_drone_max_turns(Moves, Drone, T)), TurnsList),
+    sort(TurnsList, SortedTurns),
+    reverse(SortedTurns, [Turns|_]).
 
-plan(State, Goal, Been_list, Moves) :-
+export_moves(Mov, _) :- empty_stack(Mov).
+export_moves(Mov, Stream) :-
+    stack(E, Rest, Mov),
+    export_moves(Rest, Stream),
+    writeln(Stream, E).
+
+plan(State, Goal, _, Moves, MaxTurns) :-
+    subset(Goal, State),
+    turns_used(Moves, UsedTurns),
+    UsedTurns #=< MaxTurns,
     %% write(State), nl,
+    write('moves are'), nl,
+    open('actions.txt', write, Stream),
+    export_moves(Moves, Stream),
+    close(Stream),
+    reverse_print_stack(Moves), nl,
+    write('Turns: '), write(UsedTurns).
+
+plan(State, Goal, Been_list, Moves, MaxTurns) :-
+    %% write(State), nl, nl,
     %% write(Been_list), nl,
     move(State, Name, Preconditions, Actions),
     conditions_met(Preconditions, State),
@@ -34,7 +63,7 @@ plan(State, Goal, Been_list, Moves) :-
     not(member_state(Child_state, Been_list)),
     stack(Child_state, Been_list, New_been_list),
     stack(Name, Moves, New_moves),
-    plan(Child_state, Goal, New_been_list, New_moves),!.
+    plan(Child_state, Goal, New_been_list, New_moves, MaxTurns),!.
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
@@ -53,12 +82,6 @@ reverse_print_stack(S) :-
     stack(E, Rest, S), 
     reverse_print_stack(Rest),
     write(E), nl.
-	
-export_moves(Mov, Stream) :- empty_stack(Mov).
-export_moves(Mov, Stream) :-
-	stack(E, Rest, Mov),
-	export_moves(Rest, Stream),
-	writeln(Stream, E).
 
 count_occurrences(List, Element, Counter) :-
     not(member(Element, List)),
@@ -77,7 +100,9 @@ drone_load([weighs(Drone, X)|_], Drone, Weight) :- Weight is X.
 drone_load([_|T], Drone, Weight) :- drone_load(T, Drone, Weight).
 
 drone_coords([], _, _) :- fail.
-drone_coords([at(Drone, Coords)|_], Drone, Coords).
+drone_coords([at(Drone, coord(X, Y))|_], Drone, Coords) :- Coords = coord(X, Y).
+drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Coords).
+    
 drone_coords([_|T], Drone, Coords) :- drone_coords(T, Drone, Coords).
 
 need_to_load_more(State, Order, Product) :-
@@ -96,6 +121,11 @@ distance(Order, Warehouse, Distance) :-
     order(Order, _, OrderCoord),
     warehouse(Warehouse, WarehouseCoord),
     distance(OrderCoord, WarehouseCoord, Distance).
+distance(State, Drone, Order, Distance) :-
+    drone(Drone),
+    order(Order, _, OrderCoords),
+    drone_coords(State, Drone, DroneCoords),
+    distance(OrderCoords, DroneCoords, Distance).
 distance(State, Drone, Warehouse, Distance) :-
     drone(Drone),
     warehouse(Warehouse, WarehouseCoord),
@@ -124,7 +154,6 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
         ),
         DistanceList
     ),
-    write(DistanceList), nl,
     sort(DistanceList, [[_, Drone, OldWeight, NewWeight]|_]).
 
 %% 
@@ -133,41 +162,47 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
 
 move(
     State,
-    load(Drone, Product, Warehouse),
+    load(Drone, Product, Warehouse, TurnsConsumed),
     [at(Item, Warehouse)],
     [
         del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)),
-        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(Product, Order)), add(at(Drone, Warehouse))
+        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(Product, Order)), del(at(Drone, PrevDroneCoords)), add(at(Drone, Warehouse))
     ]
 ) :-
-    item(Item, Product),                    % 
+    item(Item, Product),
     order(Order, OrderList, _OrderCoord),
     member(Product, OrderList),
     need_to_load_more(State, Order, Product),
     nearest_warehouse_from_order(State, Order, Product, Warehouse),
     drone(Drone),
+    drone_coords(State, Drone, PrevDroneCoords),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
     payload(MaxWeight),
     CurrentWeight + ProductWeight #< MaxWeight,
-    NewWeight is CurrentWeight + ProductWeight.
+    NewWeight is CurrentWeight + ProductWeight,
+    distance(State, Drone, Warehouse, Distance),
+    TurnsConsumed is Distance + 1.
     % nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight).
 
 move(
     State,
-    deliver(Drone, Product, Order),
+    deliver(Drone, Product, Order, TurnsConsumed),
     [at(Item, Drone)],
     [
         del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(Product, Order)),
-        add(at(Product, Order)), add(weighs(Drone, NewWeight)), add(at(Drone, Order))
+        add(at(Product, Order)), add(weighs(Drone, NewWeight)), del(at(Drone, PrevDroneCoords)), add(at(Drone, Order))
     ]
 ) :-
     drone(Drone),
+    drone_coords(State, Drone, PrevDroneCoords),
     order(Order, _, _),
     item(Item, Product),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
-    NewWeight is CurrentWeight - ProductWeight.
+    NewWeight is CurrentWeight - ProductWeight,
+    distance(State, Drone, Order, Distance),
+    TurnsConsumed is Distance + 1.
 
 %%
 %% World Facts
@@ -219,7 +254,7 @@ order(order3, [product3], coord(5, 6)).
 %% Main
 %% 
 
-go(S, G) :- plan(S, G, [S], []).
+go(S, G) :- plan(S, G, [S], [], 50).
 
 test :- go(
     [
