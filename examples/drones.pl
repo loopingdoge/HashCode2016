@@ -20,6 +20,9 @@ stack(E, S, [E|S]).
 plan(State, Goal, _, Moves) :-  
     subset(Goal, State), 
     write('moves are'), nl,
+	open('actions.txt', write, Stream),
+	export_moves(Moves, Stream),
+	close(Stream),
     reverse_print_stack(Moves).
 
 plan(State, Goal, Been_list, Moves) :-
@@ -50,6 +53,12 @@ reverse_print_stack(S) :-
     stack(E, Rest, S), 
     reverse_print_stack(Rest),
     write(E), nl.
+	
+export_moves(Mov, Stream) :- empty_stack(Mov).
+export_moves(Mov, Stream) :-
+	stack(E, Rest, Mov),
+	export_moves(Rest, Stream),
+	writeln(Stream, E).
 
 count_occurrences(List, Element, Counter) :-
     not(member(Element, List)),
