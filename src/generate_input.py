@@ -2,7 +2,7 @@
 from sys import argv
 from random import randint
 
-MAX_STOCKS = 15
+MAX_STOCKS = 5
 MAX_ITEMS_PER_ORDER = 2
 
 def coord_line(rows, cols):
@@ -68,7 +68,7 @@ def main():
         config["cols"]
     )
     res += orders_lines(config["orders"], config["products"], config["rows"], config["cols"])
-    with open(config["filepath"], "w") as file:
+    with open("./in/generated.in", "w") as file:
         file.write(res)
 
 if __name__ == "__main__":
