@@ -1,11 +1,15 @@
 from fileinput import filename
 
+import sys
+
+
 def __charAt(String, i):
     j = i+1
     return String[i:j]
 
-moves = open("../examples/actions.txt", "r")
-output = open("../examples/output.txt", "w")
+file_name	= sys.argv[1]
+moves = open('./in/' + file_name + ".in", "r")
+output = open('./out/' + file_name + ".out", "w")
 
 num_lines = sum(1 for line in moves)
 output.write(str(num_lines) +"\n")
@@ -17,6 +21,14 @@ command = ""
 prod_quantity = 1
 
 for line in moves.readlines():
+
+    i = len(line)
+    char = __charAt(line, i)
+    while char != ",":
+        line = line[:i]
+        i -= 1
+        char = __charAt(line, i)
+
     current = line
     if previous != "first":
         if  previous == line:
@@ -45,7 +57,7 @@ for line in moves.readlines():
             index += 1
         command += " "
         index += 1
-        while __charAt(current, index) != ")": #reading warehouse number
+        while __charAt(current, index) != ",": #reading warehouse number
             if __charAt(current, index).isdigit():
                 command += __charAt(current, index)
             index += 1
@@ -65,7 +77,7 @@ for line in moves.readlines():
             index += 1
         index += 1
 
-        while __charAt(current, index) != ")": #reading customer number
+        while __charAt(current, index) != ",": #reading customer number
             c = __charAt(current, index)
             if __charAt(current, index).isdigit():
                 command += __charAt(current, index)
@@ -76,7 +88,7 @@ for line in moves.readlines():
 
 
 else:
-    command = command + " " + str(prod_quantity) + "\n"
+    command = command + " " + str(prod_quantity)
     output.write(command)
 
 moves.close()
