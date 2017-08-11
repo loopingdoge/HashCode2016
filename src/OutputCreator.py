@@ -11,13 +11,14 @@ moves = open('./out/' + file_name + ".cmds", "r") #cmds stands for commands
 output = open('./out/' + file_name + ".out", "w")
 
 num_lines = sum(1 for line in moves)
-output.write(str(num_lines) +"\n")
 moves.close()
 moves = open("../examples/actions.txt", "r")
 previous = "first" #a special value for first iteration
 current = ""
 command = ""
 prod_quantity = 1
+
+outStr = ""
 
 for line in moves.readlines():
 
@@ -33,10 +34,11 @@ for line in moves.readlines():
         if  previous == line:
             previous = line
             prod_quantity += 1
+            num_lines -= 1
             continue
         else:
             command = command + " " + str(prod_quantity) + "\n"
-            output.write(command)
+            outStr += command
             command = ""
             prod_quantity = 1
 
@@ -88,8 +90,9 @@ for line in moves.readlines():
 
 else:
     command = command + " " + str(prod_quantity)
-    output.write(command)
+    outStr += command
 
+output.write(str(num_lines) + outStr)
 moves.close()
 output.close()
 
