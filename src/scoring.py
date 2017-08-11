@@ -1,4 +1,4 @@
-
+1
 #python3 src/scoring.py test googleOutputExample
 
 import sys
@@ -214,6 +214,7 @@ for d in range(D):
 
 for c in range(COMMANDS_NUM):
     defs = file.readline().split()
+    print(defs)
     droneID = int(defs[0])
     tag = defs[1] # 'L': Load, 'D': Deliver, 'W': Wait
     data = int(defs[2]) # 'L': WharehouseID, 'D': OrderID, 'W': #turns
