@@ -1,7 +1,4 @@
-import os
-import errno
-import sys
-import jinja2
+import os, errno, sys, jinja2
 from functools import reduce
 
 file_name	= sys.argv[1]
@@ -151,5 +148,14 @@ if __name__ == "__main__":
     res = render_template(
         world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, file_name, './src/planner.pl'
     )
-    with open("out/" + file_name + ".pl", "w") as fh:
+
+    outfile_name = "out/" + file_name + ".pl"
+    if not os.path.exists(os.path.dirname(outfile_name)):
+        try:
+            os.makedirs(os.path.dirname(outfile_name))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+
+    with open(outfile_name, "w") as fh:
         fh.write(res)

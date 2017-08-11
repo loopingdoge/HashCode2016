@@ -200,9 +200,8 @@ for o in range(O):
 file.close()
 
 # Google output parsing
-file_name = sys.argv[2]
 
-file  = open('./in/' + file_name + ".in", "r")
+file  = open('./out/' + file_name + ".out", "r")
 
 defs = file.readline().split()
 
@@ -231,9 +230,9 @@ for c in range(COMMANDS_NUM):
 file.close()
 
 #print drones
-for i, drone in enumerate(drones):
-    print("drone {}:".format(i))
-    print(drone)
+# for i, drone in enumerate(drones):
+#     print("drone {}:".format(i))
+#     print(drone)
 
 # initialize warehouses objects
 warehouses = []   #warehouse array
@@ -248,9 +247,9 @@ for i, warehouse in enumerate(warehousesList):
     warehouses = warehouses + [w]
 
 #print warehouses
-for i,warehouse in enumerate(warehouses):
-    print("warehouse {}:".format(i))
-    print(warehouse)
+# for i,warehouse in enumerate(warehouses):
+#     print("warehouse {}:".format(i))
+#     print(warehouse)
 
 # initialize orders objects
 orders = []
@@ -266,9 +265,9 @@ for i,order in enumerate(ordersList):
     orders = orders + [o]
 
 #print orders
-for i,order in enumerate(orders):
-    print("order {}:".format(i))
-    print(order)
+# for i,order in enumerate(orders):
+#     print("order {}:".format(i))
+#     print(order)
 
 matrix = [[] for y in range(T)]    
 
