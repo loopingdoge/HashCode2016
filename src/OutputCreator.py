@@ -2,13 +2,12 @@ from fileinput import filename
 
 import sys
 
-
 def __charAt(String, i):
     j = i+1
     return String[i:j]
 
 file_name	= sys.argv[1]
-moves = open('./in/' + file_name + ".in", "r")
+moves = open('./out/' + file_name + ".cmds", "r") #cmds stands for commands
 output = open('./out/' + file_name + ".out", "w")
 
 num_lines = sum(1 for line in moves)
