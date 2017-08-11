@@ -48,9 +48,9 @@ plan(State, Goal, _, Moves, MaxTurns) :-
     UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
-    %open('actions.txt', write, Stream),
-    %export_moves(Moves, Stream),
-    %close(Stream),
+    open('out/{{ filename }}.cmds', write, Stream),
+    export_moves(Moves, Stream),
+    close(Stream),
     reverse_print_stack(Moves), nl,
     write('Turns: '), write(UsedTurns).
 
@@ -210,89 +210,25 @@ move(
 %% World Facts
 %%
 
-payload(500).
+payload({{ payload }}).
 
 coord(X, Y) :-
-  X<100,
+  X<{{ rows }},
   X>=0,
-  Y<100,
+  Y<{{ cols }},
   Y>=0.
 
-drone(drone1).
-drone(drone2).
-drone(drone3).
-
-warehouse(warehouse1, coord(0, 0)).
-warehouse(warehouse2, coord(5, 5)).
-
-product(product1, 100).
-product(product2, 5).
-product(product3, 450).
-
-item(item1, product1).
-item(item2, product1).
-item(item3, product1).
-item(item4, product1).
-item(item5, product1).
-item(item6, product2).
-item(item7, product2).
-item(item8, product2).
-item(item9, product2).
-item(item10, product2).
-item(item11, product2).
-item(item12, product2).
-item(item13, product2).
-item(item14, product2).
-item(item15, product2).
-item(item16, product2).
-item(item17, product3).
-item(item18, product3).
-
-order(order1, [product3, product1], coord(1, 1)).
-order(order2, [product1], coord(3, 3)).
-order(order3, [product3], coord(5, 6)).
+{{ world_facts }}
 
 %% 
 %% Main
 %% 
 
-go(S, G) :- plan(S, G, [S], [], 50).
+go(S, G) :- plan(S, G, [S], [], {{ max_turns }}).
 
 test :- go(
-    [
-        at(drone1, coord(0, 0)),
-        at(drone2, coord(0, 0)),
-        at(drone3, coord(0, 0)),
-      
-        weighs(drone1, 0),
-        weighs(drone2, 0),
-        weighs(drone3, 0),
-      
-        at(item1, warehouse1),
-        at(item2, warehouse1),
-        at(item3, warehouse1),
-        at(item4, warehouse1),
-        at(item5, warehouse1),
-        at(item6, warehouse1),
-        at(item7, warehouse2),
-        at(item8, warehouse2),
-        at(item9, warehouse2),
-        at(item10, warehouse2),
-        at(item11, warehouse2),
-        at(item12, warehouse2),
-        at(item13, warehouse2),
-        at(item14, warehouse2),
-        at(item15, warehouse2),
-        at(item16, warehouse2),
-        at(item17, warehouse2),
-        at(item18, warehouse2)
-    ],
-    [
-        at(product1, order1),
-        at(product3, order1),
-        at(product1, order2),
-        at(product3, order3)
-    ]
+    [{{ initial_state }}],
+    [{{ final_state }}]
 ).
 
 /** <examples> Your example queries go here, e.g.
