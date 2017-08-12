@@ -102,18 +102,26 @@ drone_load([weighs(Drone, X)|_], Drone, Weight) :- Weight is X.
 drone_load([_|T], Drone, Weight) :- drone_load(T, Drone, Weight).
 
 drone_coords([], _, _) :- fail.
-drone_coords([at(Drone, coord(X, Y))|_], Drone, Coords) :- Coords = coord(X, Y).
-drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Coords).
-    
+drone_coords([at(Drone, coord(X, Y))|_], Drone, Coords) :- !, Coords = coord(X, Y), !.
+drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Coords), !.
+drone_coords([at(Drone, Order)|_], Drone, Coords) :- order(Order, _, Coords), !.
 drone_coords([_|T], Drone, Coords) :- drone_coords(T, Drone, Coords).
 
+drone_location([], _, _) :- fail.
+drone_location([at(Drone, coord(X, Y))|_], Drone, coord(X, Y)) :- !.
+drone_location([at(Drone, Warehouse)|_], Drone, Warehouse) :- warehouse(Warehouse, _), !.
+drone_location([at(Drone, Order)|_], Drone, Order) :- order(Order, _, _), !.
+drone_location([_|T], Drone, Location) :- drone_location(T, Drone, Location).
+
 need_to_load_more(State, Order, Product) :-
-    order(Order, OrderList, _),
-    count_occurrences(OrderList, Product, CountTotalProducts),
-    count_occurrences(State, delivering(Product, Order), CountDelivering),
-    count_occurrences(State, at(Product, Order), CountAlreadyDelivered),
-    CountDelivering #< CountTotalProducts - CountAlreadyDelivered,
+    order(Order, _, _),
+    count_occurrences(State, need(_, Product, Order), CountRemainingProducts),
+    CountRemainingProducts #> 0,
     !.
+
+item_in_warehouse([], _, _) :- fail, !.
+item_in_warehouse([at(Item, Warehouse)|_], Item, Warehouse) :- item(Item, _), warehouse(Warehouse, _), !.
+item_in_warehouse([_|T], Item, Warehouse) :- item_in_warehouse(T, Item, Warehouse).
 
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
     coord(X1, Y1),
@@ -165,19 +173,20 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
 move(
     State,
     load(Drone, Product, Warehouse, TurnsConsumed),
-    [at(Item, Warehouse)],
+    [at(Item, Warehouse), need(NeedId, Product, Order)],
     [
-        del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)),
-        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(Product, Order)), del(at(Drone, PrevDroneCoords)), add(at(Drone, Warehouse))
+        del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)), del(need(NeedId, Product, Order)),
+        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Product, Order)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Warehouse))
     ]
 ) :-
     item(Item, Product),
+    item_in_warehouse(State, Item, Warehouse),
     order(Order, OrderList, _OrderCoord),
     member(Product, OrderList),
     need_to_load_more(State, Order, Product),
     nearest_warehouse_from_order(State, Order, Product, Warehouse),
     drone(Drone),
-    drone_coords(State, Drone, PrevDroneCoords),
+    drone_location(State, Drone, PrevDroneLocation),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
     payload(MaxWeight),
@@ -190,14 +199,14 @@ move(
 move(
     State,
     deliver(Drone, Product, Order, TurnsConsumed),
-    [at(Item, Drone)],
+    [at(Item, Drone), delivering(NeedId, Product, Order)],
     [
-        del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(Product, Order)),
-        add(at(Product, Order)), add(weighs(Drone, NewWeight)), del(at(Drone, PrevDroneCoords)), add(at(Drone, Order))
+        del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(NeedId, Product, Order)),
+        add(at(NeedId, Product, Order)), add(weighs(Drone, NewWeight)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Order))
     ]
 ) :-
     drone(Drone),
-    drone_coords(State, Drone, PrevDroneCoords),
+    drone_location(State, Drone, PrevDroneLocation),
     order(Order, _, _),
     item(Item, Product),
     drone_load(State, Drone, CurrentWeight),

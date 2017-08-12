@@ -92,8 +92,9 @@ def items_facts(items):
         items_pl += "item(item{}, {}).\n".format(id, item)
     return items_pl
 
-def initial_state(drones_number, itemsWithWarehouses):
+def initial_state(drones_number, itemsWithWarehouses, orders_number):
     initial_state_pl = ""
+    needId = 0
     for d in range(drones_number):
         initial_state_pl += "at(drone{}, coord(0, 0)),\n".format(d)
         initial_state_pl += "weighs(drone{}, 0),\n".format(d)
@@ -101,21 +102,35 @@ def initial_state(drones_number, itemsWithWarehouses):
         initial_state_pl += "at({}, {}){}\n".format(
             itemWithW['id'],
             itemWithW['warehouse'],
-            "" if n == len(itemsWithWarehouses)-1 else ","
+            ","
         )
+    for o in range(orders_number):
+        order = orders[o]
+        products = ['product{0}'.format(i) for i in order['items']]
+        for n, p in enumerate(products):
+            initial_state_pl += "need({}, {}, order{}){}\n".format(
+                needId,
+                p,
+                o,
+                "" if o == orders_number-1 and n == len(products)-1 else ","
+            )
+            needId = needId + 1
     return initial_state_pl
 
 def final_state(order_number, orders):
     final_state_pl = ""
+    atId = 0
     for o in range(order_number):
         order = orders[o]
         products = ['product{0}'.format(i) for i in order['items']]
         for n, p in enumerate(products):
-            final_state_pl += "at({}, order{}){}\n".format(
+            final_state_pl += "at({}, {}, order{}){}\n".format(
+                atId,
                 p,
                 o,
                 "" if o == order_number-1 and n == len(products)-1 else ","
             )
+            atId = atId + 1
     return final_state_pl
 
 def render_template(world_facts, initial_state, final_state, turns, payload, rows, cols, filename, template_path):
@@ -143,7 +158,7 @@ if __name__ == "__main__":
     world_facts += items_facts(items)
     world_facts += orders_facts(O)
 
-    initial_state = initial_state(D, itemsWithWarehouses)
+    initial_state = initial_state(D, itemsWithWarehouses, O)
     final_state = final_state(O, orders)
     res = render_template(
         world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, file_name, './src/planner.pl'
