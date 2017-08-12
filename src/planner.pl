@@ -42,13 +42,13 @@ export_moves(Mov, Stream) :-
     export_moves(Rest, Stream),
     writeln(Stream, E).
 
-/**
-* True when a solution is found (the Goal state is a subset of the valued state)
-* Print out the solution plan and comes out of recursion
-**/
+%%
+% True when a solution is found (the Goal state is a subset of the valued state)
+% Print out the solution plan and comes out of recursion
+%%
 plan(State, Goal, _, Moves, MaxTurns) :-
     subset(Goal, State),
-    turns_used(Moves, UsedTurns),
+    % turns_used(Moves, UsedTurns),
     %UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
@@ -58,10 +58,10 @@ plan(State, Goal, _, Moves, MaxTurns) :-
     reverse_print_stack(Moves), nl,
     write('Turns: '), write(UsedTurns).
 
-/**
-* When the Goal state is a subset of the valued state
-* Use a defined action to move through the state-space
-**/
+%%
+% When the Goal state is a subset of the valued state
+% Use a defined action to move through the state-space
+%%
 plan(State, Goal, Been_list, Moves, MaxTurns) :-
     %% write(State), nl, nl,
     %% write(Been_list), nl,
@@ -73,7 +73,7 @@ plan(State, Goal, Been_list, Moves, MaxTurns) :-
     not(member_state(Child_state, Been_list)),
     stack(Child_state, Been_list, New_been_list),
     stack(Name, Moves, New_moves),
-    plan(Child_state, Goal, New_been_list, New_moves, MaxTurns),!.
+    plan(Child_state, Goal, New_been_list, New_moves, MaxTurns).
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
@@ -105,16 +105,16 @@ count_occurrences(List, Element, Counter) :-
 %% Utility predicates
 %%
 
-/**
-* returns the load weight of a drone
-**/
+%%
+% returns the load weight of a drone
+%%
 drone_load([], _, _) :- fail.
 drone_load([weighs(Drone, X)|_], Drone, Weight) :- Weight is X.
 drone_load([_|T], Drone, Weight) :- drone_load(T, Drone, Weight).
 
-/**
-* returns the drone coordinates
-**/
+%%
+% returns the drone coordinates
+%%
 drone_coords([], _, _) :- fail.
 drone_coords([at(Drone, coord(X, Y))|_], Drone, Coords) :- !, Coords = coord(X, Y), !.
 drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Coords), !.
@@ -127,29 +127,29 @@ drone_location([at(Drone, Warehouse)|_], Drone, Warehouse) :- warehouse(Warehous
 drone_location([at(Drone, Order)|_], Drone, Order) :- order(Order, _, _), !.
 drone_location([_|T], Drone, Location) :- drone_location(T, Drone, Location).
 
-/**
-* True if the order requires another product of that type
-**/
+%%
+% True if the order requires another product of that type
+%%
 need_to_load_more(State, Order, Product) :-
     order(Order, _, _),
     count_occurrences(State, need(_, Product, Order), CountRemainingProducts),
     CountRemainingProducts #> 0,
     !.
 
-/**
-* True if the warehouse contains a product of that type
-**/
+%%
+% True if the warehouse contains a product of that type
+%%
 item_in_warehouse([], _, _) :- fail, !.
 item_in_warehouse([at(Item, Warehouse)|_], Item, Warehouse) :- item(Item, _), warehouse(Warehouse, _), !.
 item_in_warehouse([_|T], Item, Warehouse) :- item_in_warehouse(T, Item, Warehouse).
 
-/**
-* return the Euclidean distance between two coordinates
-**/
+%%
+% return the Euclidean distance between two coordinates
+%%
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
     coord(X1, Y1),
     coord(X2, Y2),
-    Distance is ceil(sqrt(((X1 - X2) * (X1 - X2)) + ((Y1 - Y2) * (Y1 - Y2)))).
+    Distance is ceil(sqrt(((X1 - X2) % (X1 - X2)) + ((Y1 - Y2) % (Y1 - Y2)))).
 distance(Order, Warehouse, Distance) :-
     order(Order, _, OrderCoord),
     warehouse(Warehouse, WarehouseCoord),
@@ -165,9 +165,9 @@ distance(State, Drone, Warehouse, Distance) :-
     drone_coords(State, Drone, DroneCoords),
     distance(WarehouseCoord, DroneCoords, Distance).
 
-/**
-* returns the nearest warehouse from a order
-**/
+%%
+% returns the nearest warehouse from a order
+%%
 nearest_warehouse_from_order(State, Order, Product, Warehouse) :-
     findall(
         [Distance, Warehouses],
@@ -177,9 +177,9 @@ nearest_warehouse_from_order(State, Order, Product, Warehouse) :-
     sort(DistanceList, [[_, Warehouse]|_]).
 
 
-/**
-* returns the nearest drone from a warehouse
-**/
+%%
+% returns the nearest drone from a warehouse
+%%
 nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight) :-
     findall(
         [Distance, Drones, CurrentWeight, UpdatedWeight],
@@ -200,18 +200,18 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
 %% Actions
 %%
 
-/**
-* Action schema rapresentation:
-*
-* move(
-*    State,
-*    actionName(list of all the variables used),
-*    [preconditions],
-*    [effects]
-* )
-* where preconditions defines the states in which the action can be executed
-* and effects defines the result of executing the action.
-**/
+%%
+% Action schema rapresentation:
+%
+% move(
+%    State,
+%    actionName(list of all the variables used),
+%    [preconditions],
+%    [effects]
+% )
+% where preconditions defines the states in which the action can be executed
+% and effects defines the result of executing the action.
+%%
 
 move(
     State,
