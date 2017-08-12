@@ -145,13 +145,6 @@ need_to_load_more(State, Order, Product) :-
     !.
 
 %%
-% True if the warehouse contains a product of that type
-%%
-item_in_warehouse([], _, _) :- fail, !.
-item_in_warehouse([at(Item, Warehouse)|_], Item, Warehouse) :- item(Item, _), warehouse(Warehouse, _), !.
-item_in_warehouse([_|T], Item, Warehouse) :- item_in_warehouse(T, Item, Warehouse).
-
-%%
 % return the Euclidean distance between two coordinates
 %%
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
@@ -176,13 +169,18 @@ distance(State, Drone, Warehouse, Distance) :-
 %%
 % returns the nearest warehouse from a order
 %%
-nearest_warehouse_from_order(State, Order, Product, Warehouse) :-
+nearest_warehouse_from_order(State, Order, Product, Warehouse, Item) :-
     findall(
-        [Distance, Warehouses],
-        (warehouse(Warehouses, _), item(Item, Product), member(at(Item, Warehouses), State), distance(Order, Warehouses, Distance)),
+        [Distance, Warehouses, ItemInW],
+        (
+        	warehouse(Warehouses, _),
+            item(ItemInW, Product),
+            member(at(ItemInW, Warehouses), State),
+            distance(Order, Warehouses, Distance)
+        ),
         DistanceList
     ),
-    sort(DistanceList, [[_, Warehouse]|_]).
+    sort(DistanceList, [[_, Warehouse, Item]|_]).
 
 
 %%
@@ -231,9 +229,7 @@ move(
     ]
 ) :-
     requested_product_and_order(State, Order, Product, NeedId),
-    item(Item, Product),
-    nearest_warehouse_from_order(State, Order, Product, Warehouse),
-    item_in_warehouse(State, Item, Warehouse),
+    nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
     need_to_load_more(State, Order, Product),
     drone(Drone),
     drone_location(State, Drone, PrevDroneLocation),
