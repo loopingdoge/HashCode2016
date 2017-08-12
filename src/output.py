@@ -52,16 +52,18 @@ for line in moves.readlines():
             index += 1
         command += " L "
         index += 1
-        while __charAt(current, index) != ",": #reading produc id number
-            if __charAt(current, index).isdigit():
-                command += __charAt(current, index)
-            index += 1
-        command += " "
-        index += 1
+		warehouse = ""
         while __charAt(current, index) != ",": #reading warehouse number
             if __charAt(current, index).isdigit():
+                warehouse += __charAt(current, index)
+            index += 1
+        warehouse += " "
+        index += 1
+        while __charAt(current, index) != ",": #reading product id number
+            if __charAt(current, index).isdigit():
                 command += __charAt(current, index)
             index += 1
+		command += warehouse
         previous = line
     elif y == "deliver":
         index = 13
