@@ -127,6 +127,10 @@ drone_location([at(Drone, Warehouse)|_], Drone, Warehouse) :- warehouse(Warehous
 drone_location([at(Drone, Order)|_], Drone, Order) :- order(Order, _, _), !.
 drone_location([_|T], Drone, Location) :- drone_location(T, Drone, Location).
 
+requested_product_and_order([], _, _, _) :- fail, !.
+requested_product_and_order([need(NeedId, Product, Order)|_], Order, Product, NeedId) :- !.
+requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_and_order(T, Order, Product, NeedId).
+
 %%
 % True if the order requires another product of that type
 %%
@@ -222,12 +226,11 @@ move(
         add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Product, Order)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Warehouse))
     ]
 ) :-
+    requested_product_and_order(State, Order, Product, NeedId),
     item(Item, Product),
-    item_in_warehouse(State, Item, Warehouse),
-    order(Order, OrderList, _OrderCoord),
-    member(Product, OrderList),
-    need_to_load_more(State, Order, Product),
     nearest_warehouse_from_order(State, Order, Product, Warehouse),
+    item_in_warehouse(State, Item, Warehouse),
+    need_to_load_more(State, Order, Product),
     drone(Drone),
     drone_location(State, Drone, PrevDroneLocation),
     drone_load(State, Drone, CurrentWeight),
