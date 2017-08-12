@@ -18,11 +18,12 @@ def weights_line(products_number, max_payload):
 def warehouses_lines(warehouses_number, products_number, rows, cols, max_stocks):
     res = "{}\n".format(warehouses_number)
     items_per_product = []
+    for j in range(products_number):
+        items_per_product.append(randint(1, max_stocks))
     for _ in range(warehouses_number):
         res += coord_line(rows, cols)
         for j in range(products_number):
-            items_per_product.append(randint(1, max_stocks))
-            res += "{}".format(items_per_product[-1]) + (" " if j != products_number - 1 else "\n")
+            res += "{}".format(items_per_product[j]) + (" " if j != products_number - 1 else "\n")
     return res, items_per_product
 
 def order_lines(rows, cols, products_number, items_per_product, max_items_per_order):
@@ -50,7 +51,7 @@ def orders_lines(orders_number, products_number, rows, cols, items_per_product, 
 
 def main():
     max_stocks = 1
-    max_items_per_order = 5
+    max_items_per_order = 1
     config = {
         "rows": int(argv[1]),
         "cols": int(argv[2]),
