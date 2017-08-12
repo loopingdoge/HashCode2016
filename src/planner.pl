@@ -49,7 +49,7 @@ export_moves(Mov, Stream) :-
 plan(State, Goal, _, Moves, MaxTurns) :-
     subset(Goal, State),
     turns_used(Moves, UsedTurns),
-    UsedTurns #=< MaxTurns,
+    %UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
     open('out/{{ filename }}.cmds', write, Stream),
@@ -66,7 +66,7 @@ plan(State, Goal, Been_list, Moves, MaxTurns) :-
     %% write(State), nl, nl,
     %% write(Been_list), nl,
     turns_used(Moves, UsedTurns),
-    UsedTurns #=< MaxTurns,
+    %UsedTurns #=< MaxTurns,
     move(State, Name, Preconditions, Actions),
     conditions_met(Preconditions, State),
     change_state(State, Actions, Child_state),
