@@ -52,7 +52,7 @@ for line in moves.readlines():
             index += 1
         command += " L "
         index += 1
-		warehouse = ""
+        warehouse = ""
         while __charAt(current, index) != ",": #reading warehouse number
             if __charAt(current, index).isdigit():
                 warehouse += __charAt(current, index)
@@ -63,7 +63,7 @@ for line in moves.readlines():
             if __charAt(current, index).isdigit():
                 command += __charAt(current, index)
             index += 1
-		command += warehouse
+        command += " " + warehouse
         previous = line
     elif y == "deliver":
         index = 13
