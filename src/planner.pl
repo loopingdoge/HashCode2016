@@ -77,11 +77,11 @@ plan(State, Goal, Been_list, Moves, MaxTurns) :-
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
-    change_state(S, T, S2),
-    add_to_set(P, S2, S_new), !.
+    add_to_set(P, S, S2),
+    change_state(S2, T, S_new), !.
 change_state(S, [del(P)|T], S_new) :-
-    change_state(S, T, S2),
-    remove_from_set(P, S2, S_new), !.
+    remove_from_set(P, S, S2),
+    change_state(S2, T, S_new), !.
 conditions_met(P, S) :- subset(P, S).
 
 member_state(S, [H|_]) :- equal_set(S, H).
@@ -224,13 +224,12 @@ move(
     load(Drone, Product, Warehouse, TurnsConsumed),
     [at(Item, Warehouse), need(NeedId, Product, Order)],
     [
-        del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)), del(need(NeedId, Product, Order)),
-        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Warehouse))
+        del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)), del(need(NeedId, Product, Order)), del(at(Drone, PrevDroneLocation)),
+        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), add(at(Drone, Warehouse))
     ]
 ) :-
     requested_product_and_order(State, Order, Product, NeedId),
     nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
-    need_to_load_more(State, Order, Product),
     nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
     drone_location(State, Drone, PrevDroneLocation),
     TurnsConsumed is Distance + 1.
@@ -240,8 +239,8 @@ move(
     deliver(Drone, Product, Order, TurnsConsumed),
     [at(Item, Drone), delivering(NeedId, Item, Order, Drone)],
     [
-        del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(NeedId, Item, Order, Drone)),
-        add(at(NeedId, Product, Order)), add(weighs(Drone, NewWeight)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Order))
+        del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(NeedId, Item, Order, Drone)), del(at(Drone, PrevDroneLocation)),
+        add(at(NeedId, Product, Order)), add(weighs(Drone, NewWeight)), add(at(Drone, Order))
     ]
 ) :-
     delivering_product_and_order(State, Order, Item, NeedId, Drone),
