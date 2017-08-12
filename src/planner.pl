@@ -149,7 +149,7 @@ item_in_warehouse([_|T], Item, Warehouse) :- item_in_warehouse(T, Item, Warehous
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
     coord(X1, Y1),
     coord(X2, Y2),
-    Distance is ceil(sqrt(((X1 - X2) % (X1 - X2)) + ((Y1 - Y2) % (Y1 - Y2)))).
+    Distance is ceil(sqrt(((X1 - X2) * (X1 - X2)) + ((Y1 - Y2) * (Y1 - Y2)))).
 distance(Order, Warehouse, Distance) :-
     order(Order, _, OrderCoord),
     warehouse(Warehouse, WarehouseCoord),
