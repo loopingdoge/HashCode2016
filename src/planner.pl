@@ -46,9 +46,9 @@ export_moves(Mov, Stream) :-
 % True when a solution is found (the Goal state is a subset of the valued state)
 % Print out the solution plan and comes out of recursion
 %%
-plan(State, Goal, _, Moves, MaxTurns) :-
+plan(State, Goal, _, Moves, _) :-
     subset(Goal, State),
-    % turns_used(Moves, UsedTurns),
+    turns_used(Moves, UsedTurns),
     %UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
@@ -65,7 +65,7 @@ plan(State, Goal, _, Moves, MaxTurns) :-
 plan(State, Goal, Been_list, Moves, MaxTurns) :-
     %% write(State), nl, nl,
     %% write(Been_list), nl,
-    turns_used(Moves, UsedTurns),
+    % turns_used(Moves, UsedTurns),
     %UsedTurns #=< MaxTurns,
     move(State, Name, Preconditions, Actions),
     conditions_met(Preconditions, State),
