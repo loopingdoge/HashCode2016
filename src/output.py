@@ -12,7 +12,7 @@ output = open('./out/' + file_name + ".out", "w")
 
 num_lines = sum(1 for line in moves)
 moves.close()
-moves = open("../examples/actions.txt", "r")
+moves = open('./out/' + file_name + ".cmds", "r")
 previous = "first" #a special value for first iteration
 current = ""
 command = ""
@@ -92,7 +92,7 @@ else:
     command = command + " " + str(prod_quantity)
     outStr += command
 
-output.write(str(num_lines) + outStr)
+output.write("{}\n{}".format(str(num_lines), outStr))
 moves.close()
 output.close()
 
