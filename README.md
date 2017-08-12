@@ -1,10 +1,26 @@
 # HashCode2016
 Artificial Intelligence course project based on the [HashCode 2016 problem](https://hashcode.withgoogle.com/2016/tasks/hashcode2016_qualification_task.pdf)
 
-### Input parser
+## Requirements
+- [**Jinnja2**](http://jinja.pocoo.org/)
+  - `pip install Jinja2` (may require sudo)
 
-The input parser takes the name of a file inside `in` as parameter and outputs a file with the same name inside `out`:
+## Input Generator
 
-`python src/parser.py test`
+### Usage
+Requires the args:
+- map rows
+- map cols
+- drones number
+- max turns
+- drones payload
+- products number
+- warehouses number
+- orders number
 
-This will parse `in/test.in` and generate `out/test.pl`
+
+After the execution it will output a file in `./in/generated.in`.
+#### Example
+```
+$ python src/generate_input.py 50 50 10 500 250 5 3 3
+```

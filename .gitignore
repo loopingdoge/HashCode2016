@@ -2,3 +2,4 @@
 .DS_Store
 **/actions.txt
 out
+in/generated.in
