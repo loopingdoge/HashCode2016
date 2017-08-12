@@ -52,7 +52,7 @@ plan(State, Goal, _, Moves, _) :-
     %UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
-    open('out/{{ filename }}.cmds', write, Stream),
+    open('out/generated.cmds', write, Stream),
     export_moves(Moves, Stream),
     close(Stream),
     reverse_print_stack(Moves), nl.
@@ -131,6 +131,10 @@ requested_product_and_order([], _, _, _) :- fail, !.
 requested_product_and_order([need(NeedId, Product, Order)|_], Order, Product, NeedId) :- !.
 requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_and_order(T, Order, Product, NeedId).
 
+delivering_product_and_order([], _, _, _, _) :- fail, !.
+delivering_product_and_order([delivering(NeedId, Item, Order, Drone)|_], Order, Item, NeedId, Drone) :- !.
+delivering_product_and_order([_|T], Order, Item, NeedId, Drone) :- delivering_product_and_order(T, Order, Item, NeedId, Drone).
+
 %%
 % True if the order requires another product of that type
 %%
@@ -188,13 +192,13 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
     findall(
         [Distance, Drones, CurrentWeight, UpdatedWeight],
         (
-            drone(Drones),
-            drone_load(State, Drone, CurrentWeight),
+           drone(Drones),
+           drone_load(State, Drone, CurrentWeight),
            product(Product, ProductWeight),
            payload(MaxWeight),
            CurrentWeight + ProductWeight #< MaxWeight,
            UpdatedWeight is CurrentWeight + ProductWeight,
-            distance(State, Drones, Warehouse, Distance)
+           distance(State, Drones, Warehouse, Distance)
         ),
         DistanceList
     ),
@@ -223,7 +227,7 @@ move(
     [at(Item, Warehouse), need(NeedId, Product, Order)],
     [
         del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)), del(need(NeedId, Product, Order)),
-        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Product, Order)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Warehouse))
+        add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Warehouse))
     ]
 ) :-
     requested_product_and_order(State, Order, Product, NeedId),
@@ -245,16 +249,15 @@ move(
 move(
     State,
     deliver(Drone, Product, Order, TurnsConsumed),
-    [at(Item, Drone), delivering(NeedId, Product, Order)],
+    [at(Item, Drone), delivering(NeedId, Item, Order, Drone)],
     [
-        del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(NeedId, Product, Order)),
+        del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(NeedId, Item, Order, Drone)),
         add(at(NeedId, Product, Order)), add(weighs(Drone, NewWeight)), del(at(Drone, PrevDroneLocation)), add(at(Drone, Order))
     ]
 ) :-
-    drone(Drone),
-    drone_location(State, Drone, PrevDroneLocation),
-    order(Order, _, _),
+    delivering_product_and_order(State, Order, Item, NeedId, Drone),
     item(Item, Product),
+    drone_location(State, Drone, PrevDroneLocation),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
     NewWeight is CurrentWeight - ProductWeight,
