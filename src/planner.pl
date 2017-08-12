@@ -42,6 +42,10 @@ export_moves(Mov, Stream) :-
     export_moves(Rest, Stream),
     writeln(Stream, E).
 
+/**
+* True when a solution is found (the Goal state is a subset of the valued state)
+* Print out the solution plan and comes out of recursion
+**/
 plan(State, Goal, _, Moves, MaxTurns) :-
     subset(Goal, State),
     turns_used(Moves, UsedTurns),
@@ -54,6 +58,10 @@ plan(State, Goal, _, Moves, MaxTurns) :-
     reverse_print_stack(Moves), nl,
     write('Turns: '), write(UsedTurns).
 
+/**
+* When the Goal state is a subset of the valued state
+* Use a defined action to move through the state-space
+**/
 plan(State, Goal, Been_list, Moves, MaxTurns) :-
     %% write(State), nl, nl,
     %% write(Been_list), nl,
@@ -80,8 +88,8 @@ member_state(S, [H|_]) :- equal_set(S, H).
 member_state(S, [_|T]) :- member_state(S, T).
 
 reverse_print_stack(S) :- empty_stack(S).
-reverse_print_stack(S) :- 
-    stack(E, Rest, S), 
+reverse_print_stack(S) :-
+    stack(E, Rest, S),
     reverse_print_stack(Rest),
     write(E), nl.
 
@@ -97,10 +105,16 @@ count_occurrences(List, Element, Counter) :-
 %% Utility predicates
 %%
 
+/**
+* returns the load weight of a drone
+**/
 drone_load([], _, _) :- fail.
 drone_load([weighs(Drone, X)|_], Drone, Weight) :- Weight is X.
 drone_load([_|T], Drone, Weight) :- drone_load(T, Drone, Weight).
 
+/**
+* returns the drone coordinates
+**/
 drone_coords([], _, _) :- fail.
 drone_coords([at(Drone, coord(X, Y))|_], Drone, Coords) :- !, Coords = coord(X, Y), !.
 drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Coords), !.
@@ -113,16 +127,25 @@ drone_location([at(Drone, Warehouse)|_], Drone, Warehouse) :- warehouse(Warehous
 drone_location([at(Drone, Order)|_], Drone, Order) :- order(Order, _, _), !.
 drone_location([_|T], Drone, Location) :- drone_location(T, Drone, Location).
 
+/**
+* True if the order requires another product of that type
+**/
 need_to_load_more(State, Order, Product) :-
     order(Order, _, _),
     count_occurrences(State, need(_, Product, Order), CountRemainingProducts),
     CountRemainingProducts #> 0,
     !.
 
+/**
+* True if the warehouse contains a product of that type
+**/
 item_in_warehouse([], _, _) :- fail, !.
 item_in_warehouse([at(Item, Warehouse)|_], Item, Warehouse) :- item(Item, _), warehouse(Warehouse, _), !.
 item_in_warehouse([_|T], Item, Warehouse) :- item_in_warehouse(T, Item, Warehouse).
 
+/**
+* return the Euclidean distance between two coordinates
+**/
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
     coord(X1, Y1),
     coord(X2, Y2),
@@ -142,6 +165,9 @@ distance(State, Drone, Warehouse, Distance) :-
     drone_coords(State, Drone, DroneCoords),
     distance(WarehouseCoord, DroneCoords, Distance).
 
+/**
+* returns the nearest warehouse from a order
+**/
 nearest_warehouse_from_order(State, Order, Product, Warehouse) :-
     findall(
         [Distance, Warehouses],
@@ -150,6 +176,10 @@ nearest_warehouse_from_order(State, Order, Product, Warehouse) :-
     ),
     sort(DistanceList, [[_, Warehouse]|_]).
 
+
+/**
+* returns the nearest drone from a warehouse
+**/
 nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight) :-
     findall(
         [Distance, Drones, CurrentWeight, UpdatedWeight],
@@ -166,9 +196,22 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
     ),
     sort(DistanceList, [[_, Drone, OldWeight, NewWeight]|_]).
 
-%% 
+%%
 %% Actions
-%% 
+%%
+
+/**
+* Action schema rapresentation:
+*
+* move(
+*    State,
+*    actionName(list of all the variables used),
+*    [preconditions],
+*    [effects]
+* )
+* where preconditions defines the states in which the action can be executed
+* and effects defines the result of executing the action.
+**/
 
 move(
     State,
@@ -229,9 +272,9 @@ coord(X, Y) :-
 
 {{ world_facts }}
 
-%% 
+%%
 %% Main
-%% 
+%%
 
 go(S, G) :- plan(S, G, [S], [], {{ max_turns }}).
 
