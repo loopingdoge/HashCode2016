@@ -108,8 +108,8 @@ count_occurrences(List, Element, Counter) :-
 %%
 % returns the load weight of a drone
 %%
-drone_load([], _, _) :- fail.
-drone_load([weighs(Drone, X)|_], Drone, Weight) :- Weight is X.
+drone_load([], _, _) :- fail, !.
+drone_load([weighs(Drone, X)|_], Drone, Weight) :- Weight is X, !.
 drone_load([_|T], Drone, Weight) :- drone_load(T, Drone, Weight).
 
 %%
@@ -140,14 +140,14 @@ delivering_product_and_order([_|T], Order, Item, NeedId, Drone) :- delivering_pr
 %%
 need_to_load_more(State, Order, Product) :-
     order(Order, _, _),
-    count_occurrences(State, need(_, Product, Order), CountRemainingProducts),
-    CountRemainingProducts #> 0,
+    member(need(_, Product, Order), State),
     !.
 
 %%
 % return the Euclidean distance between two coordinates
 %%
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
+    !,
     coord(X1, Y1),
     coord(X2, Y2),
     Distance is ceil(sqrt(((X1 - X2) * (X1 - X2)) + ((Y1 - Y2) * (Y1 - Y2)))).
@@ -180,7 +180,7 @@ nearest_warehouse_from_order(State, Order, Product, Warehouse, Item) :-
         ),
         DistanceList
     ),
-    sort(DistanceList, [[_, Warehouse, Item]|_]).
+    sort(DistanceList, [[_, Warehouse, Item]|_]), !.
 
 
 %%
@@ -200,7 +200,7 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
         ),
         DistanceList
     ),
-    sort(DistanceList, [[Distance, Drone, OldWeight, NewWeight]|_]).
+    sort(DistanceList, [[Distance, Drone, OldWeight, NewWeight]|_]), !.
 
 %%
 %% Actions
