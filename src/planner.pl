@@ -48,15 +48,15 @@ export_moves(Mov, Stream) :-
 %%
 plan(State, Goal, _, Moves, _) :-
     subset(Goal, State),
-    turns_used(Moves, UsedTurns),
+    %turns_used(Moves, UsedTurns),
     %UsedTurns #=< MaxTurns,
     %% write(State), nl,
     write('moves are'), nl,
     open('out/{{ filename }}.cmds', write, Stream),
     export_moves(Moves, Stream),
     close(Stream),
-    reverse_print_stack(Moves), nl,
-    write('Turns: '), write(UsedTurns).
+    reverse_print_stack(Moves), nl.
+    %write('Turns: '), write(UsedTurns).
 
 %%
 % When the Goal state is a subset of the valued state
