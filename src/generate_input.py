@@ -3,7 +3,7 @@ from sys import argv, exit
 from random import randint
 
 def coord_line(rows, cols):
-    return "{} {}\n".format(randint(0, rows), randint(0, cols))
+    return "{} {}\n".format(randint(0, rows - 1), randint(0, cols - 1))
 
 def first_line(rows, cols, drones, turns, payload):
     return "{} {} {} {} {}\n".format(rows, cols, drones, turns, payload)
