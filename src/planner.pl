@@ -186,12 +186,12 @@ nearest_warehouse_from_order(State, Order, Product, Warehouse, Item) :-
 %%
 % returns the nearest drone from a warehouse
 %%
-nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight) :-
+nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight, Distance) :-
     findall(
         [Distance, Drones, CurrentWeight, UpdatedWeight],
         (
            drone(Drones),
-           drone_load(State, Drone, CurrentWeight),
+           drone_load(State, Drones, CurrentWeight),
            product(Product, ProductWeight),
            payload(MaxWeight),
            CurrentWeight + ProductWeight #< MaxWeight,
@@ -200,7 +200,7 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
         ),
         DistanceList
     ),
-    sort(DistanceList, [[_, Drone, OldWeight, NewWeight]|_]).
+    sort(DistanceList, [[Distance, Drone, OldWeight, NewWeight]|_]).
 
 %%
 %% Actions
@@ -231,16 +231,9 @@ move(
     requested_product_and_order(State, Order, Product, NeedId),
     nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
     need_to_load_more(State, Order, Product),
-    drone(Drone),
+    nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
     drone_location(State, Drone, PrevDroneLocation),
-    drone_load(State, Drone, CurrentWeight),
-    product(Product, ProductWeight),
-    payload(MaxWeight),
-    CurrentWeight + ProductWeight #< MaxWeight,
-    NewWeight is CurrentWeight + ProductWeight,
-    distance(State, Drone, Warehouse, Distance),
     TurnsConsumed is Distance + 1.
-    % nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight).
 
 move(
     State,
