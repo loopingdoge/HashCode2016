@@ -1,12 +1,14 @@
-1
 #python3 src/scoring.py test googleOutputExample
 
 import sys
 import math
 from math import sqrt
 
-# CLASSES
+# True if the number of turns is insufficient to solve problem
+# The score calculation is stopped
+turnsLimitReached = False
 
+# CLASSES
 
 class Location:
     def __init__(self, r, c):
@@ -37,8 +39,8 @@ class Order:
     def getScore(self):
         if self.completedTurn: #if completed
             return int(math.ceil( ( (0.0 + T - self.completedTurn) / T ) * 100) )
-            
-    
+
+
     def __repr__(self):
         return self.__str__()
 
@@ -88,13 +90,13 @@ class Drone:
 
     def setLocation(self, loc):
         self.location = loc
-        
+
     def getCommand(self):
         ret = []
         if self.commands:
             ret = self.commands[0]
         return ret
-        
+
     def popCommand(self):
         ret = []
         if self.commands:
@@ -152,10 +154,12 @@ class Command:
 
 def orderCompleted():
     # increments score
-    global score
-    score += int(math.ceil( ( (0.0 + T - turn) / T ) * 100) )      # rounded up
+    global score, turnsLimitReached
+    if not turnsLimitReached:
+        print(score)
+        score += int(math.ceil( ( (0.0 + T - turn) / T ) * 100) )      # rounded up
     #print('Order completed: turn {}, score = {}'.format(turn, score))
-    
+
 def distance(loc1, loc2):
     return int(math.ceil( sqrt( (loc2.r - loc1.r)**2 + (loc2.c - loc1.c)**2 ) ))
 
@@ -270,7 +274,9 @@ for i,order in enumerate(ordersList):
 #     print("order {}:".format(i))
 #     print(order)
 
-matrix = [[] for y in range(T)]    
+MATRIX_SIZE_LIMIT = 10000
+
+matrix = [[] for y in range(MATRIX_SIZE_LIMIT)]
 
 def executeCommand(drone):
     command = drone.popCommand()
@@ -298,6 +304,7 @@ def executeCommand(drone):
         # do nothing
 
 def setDroneBusy(drone):
+    global turnsLimitReached
     command = drone.getCommand()
     if command:
         if command.tag is 'L' or command.tag is 'U':
@@ -310,10 +317,16 @@ def setDroneBusy(drone):
             drone.setLocation(to_location)
         elif command.tag is 'W':
             delta = command.data
+        if turn + delta > MATRIX_SIZE_LIMIT:
+            raise Exception('matrix size limit reached')
+        if not turnsLimitReached and turn + delta > T:
+            turnsLimitReached = True
         matrix[turn + delta] += [drone.id]
-    
+
 # INIT SIMULATION
+
 for d in drones:
+    global turnsLimitReached
     command = d.getCommand()
     if command:
         if command.tag is 'L':
@@ -322,24 +335,18 @@ for d in drones:
             d.setLocation(to_location)
         elif command.tag is 'W':
             delta = command.data
+        if turn + delta > MATRIX_SIZE_LIMIT:
+            raise Exception('matrix size limit reached')
+        if not turnsLimitReached and turn + delta > T:
+            turnsLimitReached = True
         matrix[turn + delta] += [d.id]
 
-for t in range(T):
+for t in range(MATRIX_SIZE_LIMIT):
     turn = t
     for d in matrix[t]:
         executeCommand(drones[d])
         setDroneBusy(drones[d])
-    
+
 print('\n\nFINAL SCORE = {}'.format(score))
-    
-    
-  
-    
-    
-    
-    
-    
-    
-    
-
-
+if turnsLimitReached:
+    print('The score was limited by the number of input turns')
