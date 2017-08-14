@@ -1,7 +1,8 @@
 import os, errno, sys, jinja2
 from functools import reduce
 
-file_name	= sys.argv[1]
+file_name = sys.argv[1]
+planner_path = sys.argv[2] if (len(sys.argv) > 2 and sys.argv[2]) else './src/planner.pl'
 
 file    = open('./in/' + file_name + ".in", "r")
 
@@ -161,7 +162,7 @@ if __name__ == "__main__":
     initial_state = initial_state(D, itemsWithWarehouses, O)
     final_state = final_state(O, orders)
     res = render_template(
-        world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, file_name, './src/planner.pl'
+        world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, file_name, planner_path
     )
 
     outfile_name = "out/" + file_name + ".pl"

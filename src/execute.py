@@ -1,6 +1,7 @@
 import subprocess, os, sys
 
 problem_name = sys.argv[1]
+planner_name = ('./src/' + sys.argv[2] + '.pl') if (len(sys.argv) > 2 and sys.argv[2]) else './src/planner.pl'
 
 dirname = os.path.dirname(os.path.abspath(__file__))
 
@@ -12,7 +13,7 @@ outParsedSolutionFilePath = "out/{}.out".format(problem_name)
 if os.path.isfile(outPlannerFilePath):
     os.remove(outPlannerFilePath)
 print("-> 1/4 PARSING INPUT FILE -> {}.in \n".format(problem_name))
-subprocess.call("python ./src/parser.py {}".format(problem_name).split())
+subprocess.call("python ./src/parser.py {} {}".format(problem_name, planner_name).split())
 
 # continue only if the previous phase is completed correctly
 if os.path.isfile(outPlannerFilePath):
