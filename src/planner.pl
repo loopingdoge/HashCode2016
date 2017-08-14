@@ -188,15 +188,15 @@ nearest_warehouse_from_order(State, Order, Product, Warehouse, Item) :-
 %%
 nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight, Distance) :-
     findall(
-        [Distance, Drones, CurrentWeight, UpdatedWeight],
+        [Dist, Drones, CurrentWeight, UpdatedWeight],
         (
            drone(Drones),
            drone_load(State, Drones, CurrentWeight),
            product(Product, ProductWeight),
            payload(MaxWeight),
-           CurrentWeight + ProductWeight #< MaxWeight,
+           CurrentWeight + ProductWeight #=< MaxWeight,
            UpdatedWeight is CurrentWeight + ProductWeight,
-           distance(State, Drones, Warehouse, Distance)
+           distance(State, Drones, Warehouse, Dist)
         ),
         DistanceList
     ),
