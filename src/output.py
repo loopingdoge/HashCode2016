@@ -88,8 +88,7 @@ for line in moves.readlines():
         index += 1
         command = command + " " + product
 
-
-
+        previous = line
 else:
     command = command + " " + str(prod_quantity)
     outStr += command
@@ -97,5 +96,3 @@ else:
 output.write("{}\n{}".format(str(num_lines), outStr))
 moves.close()
 output.close()
-
-
