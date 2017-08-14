@@ -36,14 +36,17 @@ def order_lines(rows, cols, products_number, items_per_product, max_items_per_or
     res = coord_line(rows, cols)
     items_n = randint(1, max_items_per_order)
     res += "{}\n".format(items_n)
-    while True:
-        if sum(items_per_product) == 0:
-            main()
-        product = randint(0, products_number - 1)
-        if items_per_product[product] > 0:
-            items_per_product[product] = items_per_product[product] - 1
-            break
-    order_items = [randint(0, products_number - 1) for _ in range(items_n)]
+    order_items = []
+    for _ in range(items_n):
+        product = 0
+        while True:
+            if sum(items_per_product) == 0:
+                main()
+            product = randint(0, products_number - 1)
+            if items_per_product[product] > 0:
+                items_per_product[product] = items_per_product[product] - 1
+                break
+        order_items.append(product)
     res += " ".join(str(x) for x in order_items) + "\n"
     return res, items_per_product
 
