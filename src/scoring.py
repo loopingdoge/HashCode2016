@@ -274,7 +274,7 @@ for i,order in enumerate(ordersList):
 #     print("order {}:".format(i))
 #     print(order)
 
-MATRIX_SIZE_LIMIT = 10000
+MATRIX_SIZE_LIMIT = max(10000, T)
 
 matrix = [[] for y in range(MATRIX_SIZE_LIMIT)]
 
@@ -326,6 +326,7 @@ def setDroneBusy(drone):
 # INIT SIMULATION
 
 for d in drones:
+    global turnsLimitReached
     command = d.getCommand()
     if command:
         if command.tag is 'L':
