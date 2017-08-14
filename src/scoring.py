@@ -326,7 +326,6 @@ def setDroneBusy(drone):
 # INIT SIMULATION
 
 for d in drones:
-    global turnsLimitReached
     command = d.getCommand()
     if command:
         if command.tag is 'L':
