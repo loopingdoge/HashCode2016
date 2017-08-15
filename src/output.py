@@ -24,7 +24,8 @@ for line in moves.readlines():
 
     i = len(line)
     char = __charAt(line, i)
-    while char != ",":
+    control = __charAt(line, 0)
+    while char != "," and control != "w":
         line = line[:i]
         i -= 1
         char = __charAt(line, i)
@@ -64,7 +65,7 @@ for line in moves.readlines():
                 command += __charAt(current, index)
             index += 1
         command += " " + warehouse
-        previous = line
+
     elif y == "deliver":
         index = 13
         while __charAt(current, index) != ",":  # reading drone number
@@ -87,8 +88,14 @@ for line in moves.readlines():
             index += 1
         index += 1
         command = command + " " + product
+    elif x == "wait":
+        index = 10
+        while __charAt(current, index) != ",":  # reading drone number
+            command += __charAt(current, index)
+            index += 1
+        command += " W "
 
-        previous = line
+    previous = line
 else:
     command = command + " " + str(prod_quantity)
     outStr += command
