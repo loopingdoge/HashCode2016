@@ -2,6 +2,7 @@ import os, errno, sys, jinja2
 from functools import reduce
 
 file_name	= sys.argv[1]
+needsNum = 0
 
 file    = open('./in/' + file_name + ".in", "r")
 
@@ -59,7 +60,7 @@ def warehouses_facts(warehouses_number, warehouses):
         for p in products:
             itemsWithWarehouses.append({ 'id': "item{}".format(lastItemId), 'warehouse': "warehouse{}".format(warehouse_id) })
             lastItemId = lastItemId + 1
-        products = reduce((lambda x, y: x + ',' + y), products)	
+        products = reduce((lambda x, y: x + ',' + y), products)
         r = warehouse['coords'][0]
         c = warehouse['coords'][1]
         warehouses_pl += "warehouse(warehouse{}, coord({}, {})).\n".format(warehouse_id, r, c)
@@ -73,6 +74,10 @@ def products_facts(products_number):
         # outfile.write("product(product{}, {}).\n".format(p, weight))
         products_pl += "product(product{}, {}).\n".format(p, weight)
     return products_pl
+
+def needsNumber_facts():
+    global needsNum
+    return "needsNum({}).".format(needsNum)
 
 def orders_facts(orders_number):
     orders_pl = ""
@@ -93,6 +98,7 @@ def items_facts(items):
     return items_pl
 
 def initial_state(drones_number, itemsWithWarehouses, orders_number):
+    global needsNum
     initial_state_pl = ""
     needId = 0
     for d in range(drones_number):
@@ -115,6 +121,7 @@ def initial_state(drones_number, itemsWithWarehouses, orders_number):
                 "" if o == orders_number-1 and n == len(products)-1 else ","
             )
             needId = needId + 1
+    needsNum += needId
     return initial_state_pl
 
 def final_state(order_number, orders):
@@ -160,6 +167,9 @@ if __name__ == "__main__":
 
     initial_state = initial_state(D, itemsWithWarehouses, O)
     final_state = final_state(O, orders)
+
+    world_facts +=needsNumber_facts()
+
     res = render_template(
         world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, file_name, './src/planner.pl'
     )
