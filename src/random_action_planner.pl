@@ -1,6 +1,8 @@
 :- use_module(library(clpfd)).   %% Finite domain constraints
 %%
-%% STRIPS Planner
+%% STRIPS Planner with random selection of the action (load or deliver) to exec
+%% Improves the variety of drones used.
+%% load and deliver have the same probability.
 %%
 
 equal_set(S1, S2) :- subset(S1, S2), subset(S2, S1).
@@ -67,44 +69,32 @@ plan(State, Goal, Been_list, Moves, MaxTurns) :-
     % turns_used(Moves, UsedTurns),
     %UsedTurns #=< MaxTurns,
 
+    nb_getval(counterLoad, CounterValue), % number of items loaded by the drones at the moment
+
+    % needsNum(X),
+%   write(CounterValue), nl,
+
     MovesNames = [load, deliver],
     random_member(Selection, MovesNames),
     %write(Selection), nl,
 
-    nb_getval(counterLoad, CounterValue),
-    nb_getval(counterTotalLoad, CounterTotalLoad),
-    needsNum(X),
-    %write(CounterValue), nl,
-
+    % if
     (
-      Selection == deliver
+      Selection == deliver % if random move is "deliver"
         ->
             (
-               CounterValue == 0
+               CounterValue == 0 % if there is nothing to deliver exec a load
                   ->
                     %write("exec load"), nl,
-                    inc,
                     move(load, State, Name, Preconditions, Actions)
                   ;
                     %write("exec deliver"), nl,
-                    dec,
                     move(deliver, State, Name, Preconditions, Actions)
             )
         ;
-        (
-          CounterTotalLoad == X
-          ->
-            %write("exec deliver"), nl,
-            dec,
-            move(deliver, State, Name, Preconditions, Actions);
-            %write("exec load"), nl,
-            inc,
-            move(Any, State, Name, Preconditions, Actions)
-        )
+        % else try load, if it fail use deliver
+        move(_, State, Name, Preconditions, Actions)
     ),
-
-    %move(Selection, State, Name, Preconditions, Actions),
-
 
     conditions_met(Preconditions, State),
     change_state(State, Actions, Child_state),
@@ -271,7 +261,8 @@ move(
     nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
     nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
     drone_location(State, Drone, PrevDroneLocation),
-    TurnsConsumed is Distance + 1.
+    TurnsConsumed is Distance + 1,
+    inc. % inc the number of items loaded by the drones at the moment
 
 move(
     deliver,
@@ -290,7 +281,8 @@ move(
     product(Product, ProductWeight),
     NewWeight is CurrentWeight - ProductWeight,
     distance(State, Drone, Order, Distance),
-    TurnsConsumed is Distance + 1.
+    TurnsConsumed is Distance + 1,
+    dec. % dec the number of items loaded by the drones at the moment
 
 %%
 %% World Facts
@@ -314,10 +306,7 @@ go(S, G) :- plan(S, G, [S], [], {{ max_turns }}).
 
 test :-
   nb_setval(counterLoad, 0),
-  nb_setval(counterTotalLoad, 0),
-  % aggregate_all(count, need(_,_,_), Count),
-  % write(Count),
-  % nb_setval(needNumber, Count),
+
   go(
     [{{ initial_state }}],
     [{{ final_state }}]
@@ -326,10 +315,7 @@ test :-
 inc :-
   nb_getval(counterLoad, C),
   CNew is C + 1,
-  nb_setval(counterLoad, CNew),
-  nb_getval(counterTotalLoad, CT),
-  CTNew is CT + 1,
-  nb_setval(counterTotalLoad, CTNew).
+  nb_setval(counterLoad, CNew).
 
 dec :-
   nb_getval(counterLoad, C),
