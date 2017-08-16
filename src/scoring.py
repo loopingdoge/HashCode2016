@@ -156,7 +156,7 @@ def orderCompleted():
     # increments score
     global score, turnsLimitReached
     if not turnsLimitReached:
-        print(score)
+        #print(score)
         score += int(math.ceil( ( (0.0 + T - turn) / T ) * 100) )      # rounded up
     #print('Order completed: turn {}, score = {}'.format(turn, score))
 
@@ -183,6 +183,7 @@ orders      = []
 
 score = 0
 turn = 0
+usedTurns = 0
 
 warehousesList = []
 for w in range(W):
@@ -218,7 +219,7 @@ for d in range(D):
 
 for c in range(COMMANDS_NUM):
     defs = file.readline().split()
-    print(defs)
+    #print(defs)
     droneID = int(defs[0])
     tag = defs[1] # 'L': Load, 'D': Deliver, 'W': Wait
     data = int(defs[2]) # 'L': WharehouseID, 'D': OrderID, 'W': #turns
@@ -280,7 +281,7 @@ matrix = [[] for y in range(MATRIX_SIZE_LIMIT)]
 
 def executeCommand(drone):
     command = drone.popCommand()
-    print('DRONE{}: {}to{} - {}#prod{} - turn={}'.format(drone.id, command.tag, command.data, command.quantity, command.product, turn))
+    #print('DRONE{}: {}to{} - {}#prod{} - turn={}'.format(drone.id, command.tag, command.data, command.quantity, command.product, turn))
     if command.tag is 'L':
         w = warehouses[command.data]
         product = command.product
@@ -343,9 +344,11 @@ for d in drones:
 for t in range(MATRIX_SIZE_LIMIT):
     turn = t
     for d in matrix[t]:
+        usedTurns = t # used to save the total of turns of the solution
         executeCommand(drones[d])
         setDroneBusy(drones[d])
 
 print('\n\nFINAL SCORE = {}'.format(score))
+print('turns used: {}'.format(usedTurns))
 if turnsLimitReached:
     print('The score was limited by the number of input turns')
