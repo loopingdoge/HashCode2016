@@ -1,7 +1,8 @@
 import subprocess, os, sys
 
 problem_name = sys.argv[1]
-planner_name = ('./src/' + sys.argv[2] + '.pl') if (len(sys.argv) > 2 and sys.argv[2]) else './src/planner.pl'
+debugger = sys.argv[2]
+planner_name = ('./src/' + sys.argv[3] + '.pl') if (len(sys.argv) > 3 and sys.argv[3]) else './src/planner.pl'
 
 dirname = os.path.dirname(os.path.abspath(__file__))
 
@@ -13,7 +14,7 @@ outParsedSolutionFilePath = "out/{}.out".format(problem_name)
 if os.path.isfile(outPlannerFilePath):
     os.remove(outPlannerFilePath)
 print("-> 1/4 PARSING INPUT FILE -> {}.in \n".format(problem_name))
-subprocess.call("python ./src/parser.py {} {}".format(problem_name, planner_name).split())
+subprocess.call("python ./src/parser.py {} {} {}".format(problem_name, debugger, planner_name).split())
 
 # continue only if the previous phase is completed correctly
 if os.path.isfile(outPlannerFilePath):
@@ -21,6 +22,7 @@ if os.path.isfile(outPlannerFilePath):
     if os.path.isfile(outPlannerSolutionFilePath):
         os.remove(outPlannerSolutionFilePath)
     print("-> 2/4 STARTED PLANNING -> {}.pl \n".format(problem_name))
+
     subprocess.call("swipl -l out/{}.pl -g test -t halt -q".format(problem_name).split())
 else:
     print("ERROR: Can't generate the planner for the input problem")
@@ -38,4 +40,4 @@ else:
     sys.exit(0)
     
 print("-> 4/4 CALCULATING SCORE \n")
-subprocess.call("python ./src/scoring.py {}".format(problem_name).split())
+subprocess.call("python ./src/scoring.py {} {}".format(problem_name, debugger).split())

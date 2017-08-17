@@ -2,7 +2,8 @@ import os, errno, sys, jinja2
 from functools import reduce
 
 file_name = sys.argv[1]
-planner_path = sys.argv[2] if (len(sys.argv) > 2 and sys.argv[2]) else './src/planner.pl'
+debugger = sys.argv[2]
+planner_path = sys.argv[3] if (len(sys.argv) > 3 and sys.argv[3]) else './src/planner.pl'
 needsNum = 0
 
 file    = open('./in/' + file_name + ".in", "r")
@@ -26,7 +27,8 @@ for w in range(W):
 
 O = int(file.readline())
 
-print('ROWS:', ROWS, 'COLS:', COLS, 'DRONES:', D, 'TURNS:', TURNS, 'PAYLOAD:', PAYLOAD, 'PRODUCT TYPES', P, 'WAREHOUSES', W, 'ORDERS', O)
+if debugger:
+    print('ROWS:', ROWS, 'COLS:', COLS, 'DRONES:', D, 'TURNS:', TURNS, 'PAYLOAD:', PAYLOAD, 'PRODUCT TYPES', P, 'WAREHOUSES', W, 'ORDERS', O)
 
 orders = []
 for o in range(O):

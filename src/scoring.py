@@ -7,7 +7,8 @@ from math import sqrt
 # True if the number of turns is insufficient to solve problem
 # The score calculation is stopped
 turnsLimitReached = False
-
+global debFlag
+debFlag = False
 # CLASSES
 
 class Location:
@@ -31,7 +32,8 @@ class Order:
             if not self.items:
                 orderCompleted()
                 self.completedTurn = turn
-                print('    [COMPLETED] order{} turn{} score= {}'.format(self.id, self.completedTurn, self.getScore()))
+                if debFlag:
+                   print('    [COMPLETED] order{} turn{} score= {}'.format(self.id, self.completedTurn, self.getScore()))
         else:                                       # Delivered some items
             self.items[itemID] -= quantity
         # print(self.items)
@@ -151,6 +153,12 @@ class Command:
         return "{} {} {} {}".format(self.tag, self.data, self.product, self.quantity)
         #self.tag + ": " + self.data + " " + self.product + " " + self.quantity
 
+class CLArgument:
+    global argument
+    def __init__(self, arg):
+        self.argument = arg
+    def getArg(self):
+        return self.argument
 
 def orderCompleted():
     # increments score
@@ -165,6 +173,8 @@ def distance(loc1, loc2):
 
 # Google input parsing
 file_name   = sys.argv[1]
+debFlag = sys.argv[2]
+
 
 file  = open('./in/' + file_name + ".in", "r")
 
@@ -193,7 +203,8 @@ for w in range(W):
 
 O = int(file.readline())
 
-print('ROWS:', ROWS, 'COLS:', COLS, 'DRONES:', D, 'T:', T, 'PAYLOAD:', payload, 'PRODUCT TYPES', P, 'WAREHOUSES', W, 'ORDERS', O)
+if debFlag:
+    print('ROWS:', ROWS, 'COLS:', COLS, 'DRONES:', D, 'T:', T, 'PAYLOAD:', payload, 'PRODUCT TYPES', P, 'WAREHOUSES', W, 'ORDERS', O)
 
 ordersList = []
 for o in range(O):
