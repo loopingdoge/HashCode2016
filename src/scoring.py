@@ -2,13 +2,27 @@
 
 import sys
 import math
+import argparse
 from math import sqrt
+
+parser = argparse.ArgumentParser(description="Hashcode 2016 - Score calculator")
+parser.add_argument('problem', help='The problem name (inside ./in folder)')
+parser.add_argument('--debug', help='Print debug messages', action='store_true')
+
+args = parser.parse_args()
+
+# Google input parsing
+problem_name = args.problem
+debug = args.debug
 
 # True if the number of turns is insufficient to solve problem
 # The score calculation is stopped
 turnsLimitReached = False
-global debFlag
-debFlag = False
+
+def log(text):
+    if debug:
+        print(text)
+
 # CLASSES
 
 class Location:
@@ -32,11 +46,10 @@ class Order:
             if not self.items:
                 orderCompleted()
                 self.completedTurn = turn
-                if debFlag:
-                   print('    [COMPLETED] order{} turn{} score= {}'.format(self.id, self.completedTurn, self.getScore()))
+                log('✓ order {} completed at turn {}, {} points'.format(self.id, self.completedTurn, self.getScore()))
         else:                                       # Delivered some items
             self.items[itemID] -= quantity
-        # print(self.items)
+        # log(self.items)
 
     def getScore(self):
         if self.completedTurn: #if completed
@@ -63,12 +76,12 @@ class Warehouse:
             raise Exception('Not enough items in the warehouse')
         else:
             self.items[itemID] -= quantity
-            # print(self.items)
+            # log(self.items)
             return {itemID: quantity}
 
     def putItems(self, itemID, quantity):
         self.items[itemID] = self.items.get(itemID, 0) + quantity
-        # print(self.items)
+        # log(self.items)
 
     def __repr__(self):
         return self.__str__()
@@ -88,7 +101,7 @@ class Drone:
 
     def pushCommand(self, command):
         self.commands = self.commands + [command]
-        # print(self.commands)
+        # log(self.commands)
 
     def setLocation(self, loc):
         self.location = loc
@@ -164,19 +177,14 @@ def orderCompleted():
     # increments score
     global score, turnsLimitReached
     if not turnsLimitReached:
-        #print(score)
+        #log(score)
         score += int(math.ceil( ( (0.0 + T - turn) / T ) * 100) )      # rounded up
-    #print('Order completed: turn {}, score = {}'.format(turn, score))
+    #log('Order completed: turn {}, score = {}'.format(turn, score))
 
 def distance(loc1, loc2):
     return int(math.ceil( sqrt( (loc2.r - loc1.r)**2 + (loc2.c - loc1.c)**2 ) ))
 
-# Google input parsing
-file_name   = sys.argv[1]
-debFlag = sys.argv[2]
-
-
-file  = open('./in/' + file_name + ".in", "r")
+file  = open('./in/' + problem_name + ".in", "r")
 
 defs        = file.readline().split()
 ROWS        = int(defs[0])
@@ -203,8 +211,15 @@ for w in range(W):
 
 O = int(file.readline())
 
-if debFlag:
-    print('ROWS:', ROWS, 'COLS:', COLS, 'DRONES:', D, 'T:', T, 'PAYLOAD:', payload, 'PRODUCT TYPES', P, 'WAREHOUSES', W, 'ORDERS', O)
+# log('Rows: ' + str(ROWS))
+# log('Cols: ' + str(COLS))
+# log('Drones: ' + str(D))
+# log('Turns: ' + str(T))
+# log('Payload: ' + str(payload))
+# log('Product types: ' + str(P))
+# log('Warehouses: ' + str(W))
+# log('Orders: ' + str(O))
+# log('')
 
 ordersList = []
 for o in range(O):
@@ -217,7 +232,7 @@ file.close()
 
 # Google output parsing
 
-file  = open('./out/' + file_name + ".out", "r")
+file  = open('./out/' + problem_name + ".out", "r")
 
 defs = file.readline().split()
 
@@ -230,7 +245,7 @@ for d in range(D):
 
 for c in range(COMMANDS_NUM):
     defs = file.readline().split()
-    #print(defs)
+    #log(defs)
     droneID = int(defs[0])
     tag = defs[1] # 'L': Load, 'D': Deliver, 'W': Wait
     data = int(defs[2]) # 'L': WharehouseID, 'D': OrderID, 'W': #turns
@@ -238,7 +253,7 @@ for c in range(COMMANDS_NUM):
         product = int(defs[3])
         quantity = int(defs[4])
         command = Command(tag, data, product, quantity)
-        #print('droneID:', droneID, 'tag:', tag, 'data:', data, 'product:', product, 'quantity:', quantity)
+        #log('droneID:', droneID, 'tag:', tag, 'data:', data, 'product:', product, 'quantity:', quantity)
     else:
         # wait case
         command = Command(tag, data, None, None)
@@ -246,10 +261,10 @@ for c in range(COMMANDS_NUM):
 
 file.close()
 
-#print drones
+#log drones
 # for i, drone in enumerate(drones):
-#     print("drone {}:".format(i))
-#     print(drone)
+#     log("drone {}:".format(i))
+#     log(drone)
 
 # initialize warehouses objects
 warehouses = []   #warehouse array
@@ -263,10 +278,10 @@ for i, warehouse in enumerate(warehousesList):
     w = Warehouse(Location(r, c), products)
     warehouses = warehouses + [w]
 
-#print warehouses
+#log warehouses
 # for i,warehouse in enumerate(warehouses):
-#     print("warehouse {}:".format(i))
-#     print(warehouse)
+#     log("warehouse {}:".format(i))
+#     log(warehouse)
 
 # initialize orders objects
 orders = []
@@ -281,10 +296,10 @@ for i,order in enumerate(ordersList):
     o = Order(i, Location(r,c), products)
     orders = orders + [o]
 
-#print orders
+#log orders
 # for i,order in enumerate(orders):
-#     print("order {}:".format(i))
-#     print(order)
+#     log("order {}:".format(i))
+#     log(order)
 
 MATRIX_SIZE_LIMIT = max(10000, T)
 
@@ -292,7 +307,7 @@ matrix = [[] for y in range(MATRIX_SIZE_LIMIT)]
 
 def executeCommand(drone):
     command = drone.popCommand()
-    #print('DRONE{}: {}to{} - {}#prod{} - turn={}'.format(drone.id, command.tag, command.data, command.quantity, command.product, turn))
+    #log('DRONE{}: {}to{} - {}#prod{} - turn={}'.format(drone.id, command.tag, command.data, command.quantity, command.product, turn))
     if command.tag is 'L':
         w = warehouses[command.data]
         product = command.product
@@ -312,7 +327,7 @@ def executeCommand(drone):
         drone.unloadItems(prodct, quantity)
         w.putItems(product, quantity)
     elif command.tag is 'W':
-        print("WAITING")
+        log("WAITING")
         # do nothing
 
 def setDroneBusy(drone):
@@ -359,7 +374,7 @@ for t in range(MATRIX_SIZE_LIMIT):
         executeCommand(drones[d])
         setDroneBusy(drones[d])
 
-print('\n\nFINAL SCORE = {}'.format(score))
-print('turns used: {}'.format(usedTurns))
+print('\nTurns used: {}'.format(usedTurns))
+print('Score: {}'.format(score))
 if turnsLimitReached:
     print('The score was limited by the number of input turns')

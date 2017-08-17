@@ -1,12 +1,23 @@
-import os, errno, sys, jinja2
+import os, errno, sys, jinja2, argparse
 from functools import reduce
 
-file_name = sys.argv[1]
-debugger = sys.argv[2]
-planner_path = sys.argv[3] if (len(sys.argv) > 3 and sys.argv[3]) else './src/planner.pl'
+parser = argparse.ArgumentParser(description="Hashcode 2016 - Input parser")
+parser.add_argument('problem', help='The problem name (inside ./in folder)')
+parser.add_argument("--planner", help='The planner name (inside ./src folder)', default='./src/planner.pl')
+parser.add_argument('--debug', help='Print debug messages', action='store_true')
+
+args = parser.parse_args()
+
+problem_name = args.problem
+planner_name = args.planner
+debug = args.debug
+
+planner_path = 'src/' + planner_name + '.pl'
+outfile_path = 'out/' + problem_name + '.pl'
+
 needsNum = 0
 
-file    = open('./in/' + file_name + ".in", "r")
+file    = open('./in/' + problem_name + ".in", "r")
 
 defs    = file.readline().split()
 ROWS	= int(defs[0])
@@ -27,8 +38,15 @@ for w in range(W):
 
 O = int(file.readline())
 
-if debugger:
-    print('ROWS:', ROWS, 'COLS:', COLS, 'DRONES:', D, 'TURNS:', TURNS, 'PAYLOAD:', PAYLOAD, 'PRODUCT TYPES', P, 'WAREHOUSES', W, 'ORDERS', O)
+if debug:
+    print('Rows \t\t', ROWS)
+    print('Cols \t\t', COLS)
+    print('Drones \t\t', D)
+    print('Turns \t\t', TURNS)
+    print('Payload \t', PAYLOAD)
+    print('Product types \t', P)
+    print('Warehouses \t', W)
+    print('Orders \t\t', O)
 
 orders = []
 for o in range(O):
@@ -143,7 +161,7 @@ def final_state(order_number, orders):
             atId = atId + 1
     return final_state_pl
 
-def render_template(world_facts, initial_state, final_state, turns, payload, rows, cols, filename, template_path):
+def render_template(world_facts, initial_state, final_state, turns, payload, rows, cols, filename, template_path, debug):
     context = {
         "world_facts": world_facts,
         "initial_state": initial_state,
@@ -152,7 +170,8 @@ def render_template(world_facts, initial_state, final_state, turns, payload, row
         "payload": payload,
         "rows": rows,
         "cols": cols,
-        "filename": filename
+        "filename": filename,
+        "debug": debug
     }
     path, filename = os.path.split(template_path)
     return jinja2.Environment(
@@ -173,17 +192,17 @@ if __name__ == "__main__":
 
     world_facts +=needsNumber_facts()
 
+    debug_line = ', reverse_print_stack(Moves)' if debug else ''
+
     res = render_template(
-        world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, file_name, planner_path
+        world_facts, initial_state, final_state, TURNS, PAYLOAD, ROWS, COLS, problem_name, planner_path, debug_line
     )
 
-    outfile_name = "out/" + file_name + ".pl"
-    if not os.path.exists(os.path.dirname(outfile_name)):
+    if not os.path.exists(os.path.dirname(outfile_path)):
         try:
-            os.makedirs(os.path.dirname(outfile_name))
+            os.makedirs(os.path.dirname(outfile_path))
         except OSError as exc: # Guard against race condition
             if exc.errno != errno.EEXIST:
                 raise
-
-    with open(outfile_name, "w") as fh:
+    with open(outfile_path, "w") as fh:
         fh.write(res)

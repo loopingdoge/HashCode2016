@@ -51,11 +51,10 @@ plan(State, Goal, _, Moves, _) :-
     %turns_used(Moves, UsedTurns),
     %UsedTurns #=< MaxTurns,
     %% write(State), nl,
-    write('moves are'), nl,
     open('out/{{filename}}.cmds', write, Stream),
     export_moves(Moves, Stream),
-    close(Stream),
-    reverse_print_stack(Moves), nl.
+    close(Stream)
+    {{ debug }}.
     %write('Turns: '), write(UsedTurns).
 
 %%
