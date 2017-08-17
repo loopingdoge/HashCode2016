@@ -63,7 +63,7 @@ def main():
     print()
 
     for p in planners_and_scores:
-        print('- {}\n    Score: {}\n    Time: {}ms'.format(p['name'], p['score'], p['time']))
+        print('- {}\n    Score: {}\n    Time: {}ms\n'.format(p['name'], p['score'], p['time']))
     
     planners_and_scores.sort(key=lambda p: p['score'], reverse=True)
 
