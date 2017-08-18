@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 import itertools
 import threading
 import time
@@ -26,14 +27,19 @@ def execution_score_time(problem_name, planner_name):
     t = threading.Thread(target=animate)
     t.start()
     start_time = datetime.now()
-    byte_output = check_output('python ./src/execute.py {} --quiet --planner {}'.format(problem_name, planner_name))
+    byte_output = check_output('python ./src/execute.py {} --planner {}'.format(problem_name, planner_name), shell=True)
     end_time = datetime.now()
     elapsed_time = end_time - start_time
     animation_active = False
     sys.stdout.write('\r                        ')
     output_lines = byte_output.decode('utf-8').split("\n")
     score_line = output_lines[-2].split(" ")
-    score = int(score_line[1])
+    score = 0
+    try:
+        score = int(score_line[1])
+    except ValueError as e:
+        print("Execution error in " + planner_name)
+        sys.exit(1)
     return score, floor(elapsed_time.microseconds / 1000)
 
 def main():

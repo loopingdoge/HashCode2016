@@ -2,4 +2,5 @@
 .DS_Store
 out
 in/generated.in
-.idea/
+.idea
+env
