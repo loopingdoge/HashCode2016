@@ -75,7 +75,7 @@ def main():
     args = parser.parse_args()
 
     problem_name = args.problem
-    with open('./out/' + problem_name + '.cmds', 'r', encoding='utf-8') as cmdsfile:
+    with open('./out/' + problem_name + '.cmds', 'r') as cmdsfile:
         file_content = ""
         for line in cmdsfile:
             file_content += line
@@ -83,7 +83,7 @@ def main():
         compressed_output = compress(uncompressed_output)
         order_count = len(compressed_output.split('\n')) - 1
         final_output = str(order_count) + '\n' + compressed_output
-        with open('./out/' + problem_name + '.out', 'w', encoding='utf-8') as outfile:
+        with open('./out/' + problem_name + '.out', 'w') as outfile:
             outfile.write(final_output)
 
 if __name__ == '__main__':

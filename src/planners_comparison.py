@@ -34,13 +34,18 @@ def execution_score_time(problem_name, planner_name):
     sys.stdout.write('\r                        ')
     output_lines = byte_output.decode('utf-8').split("\n")
     score_line = output_lines[-2].split(" ")
+    usedTurns_line = output_lines[-4].split(" ")
+
     score = 0
+    turnsUsed = 0
+
     try:
         score = int(score_line[1])
+        turnsUsed = int(usedTurns_line[2])
     except ValueError as e:
         print("Execution error in " + planner_name)
         sys.exit(1)
-    return score, floor(elapsed_time.microseconds / 1000)
+    return score, turnsUsed, floor(elapsed_time.microseconds / 1000)
 
 def main():
     parser = argparse.ArgumentParser(description="Hashcode 2016")
@@ -53,24 +58,26 @@ def main():
 
     problem_name = args.problem
 
-    planners = ['stupid_planner', 'planner', 'stupid_drones_planner', 'drones_planner', 'random_action_planner']
+    planners = ['stupid_planner', 'stupid_drones_planner', 'planner',  'drones_planner', 'random_action_planner']
+    # planners = ['planner',  'drones_planner', 'random_action_planner']
     planners_and_scores = []
 
     print()
-    
+
     for planner_name in planners:
-        score, time = execution_score_time(problem_name, planner_name)
+        score, turnsUsed, time = execution_score_time(problem_name, planner_name)
         planners_and_scores.append({
             'name': ' '.join(planner_name.capitalize().split("_")),
             'score': score,
-            'time': str(time)
+            'time': str(time),
+            'turns_used': turnsUsed
         })
 
     print()
 
     for p in planners_and_scores:
-        print('- {}\n    Score: {}\n    Time: {}ms\n'.format(p['name'], p['score'], p['time']))
-    
+        print('- {}\n    Score: {}\n    Turns used: {}\n    Time: {}ms\n'.format(p['name'], p['score'], p['turns_used'], p['time']))
+
     planners_and_scores.sort(key=lambda p: p['score'], reverse=True)
 
     print('\nMax score by: {} ({})'.format(planners_and_scores[0]['name'], planners_and_scores[0]['score']))

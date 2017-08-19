@@ -46,7 +46,7 @@ class Order:
             if not self.items:
                 orderCompleted()
                 self.completedTurn = turn
-                log('✓ order {} completed at turn {}, {} points'.format(self.id, self.completedTurn, self.getScore()))
+                log('order {} completed at turn {}, {} points'.format(self.id, self.completedTurn, self.getScore()))
         else:                                       # Delivered some items
             self.items[itemID] -= quantity
         # log(self.items)
@@ -375,6 +375,6 @@ for t in range(MATRIX_SIZE_LIMIT):
         setDroneBusy(drones[d])
 
 print('\nTurns used: {}'.format(usedTurns))
-print('Score: {}'.format(score))
+print('\nScore: {}'.format(score))
 if turnsLimitReached:
     print('The score was limited by the number of input turns')
