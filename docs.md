@@ -57,12 +57,13 @@ I droni sono in grado di eseguire i seguenti comandi:
 
 Gli elementi ricevuti in input sono:
 
-- la dimensione della griglia
-- il numero di droni disponibili
-- il numero massimo di turni (spiegati in seguito)
-- il peso massimo trasportabile da un drone
-- i depositi (coordinate e contenuto)
-- gli ordini (coordinate di consegna e prodotti che ne fanno parte)
+- la dimensione della griglia,
+- il numero di droni disponibili,
+- il numero massimo di turni (spiegati in seguito),
+- il peso massimo trasportabile da un drone,
+- i diversi tipi di prodotti e il corrispettivo peso,
+- i depositi (coordinate e contenuto),
+- gli ordini (coordinate di consegna e prodotti che ne fanno parte).
 
 Gli elementi da fornire in output:
 
@@ -98,19 +99,25 @@ Per affinare le capacità di ricerca dell'agente intelligente incaricato della r
 
 #### 2.1.2 La conoscenza di base
 
-- payload
-- mappa
-- droni
-- depositi
-- peso prodotti
-- oggetti riferiti ai prodotti
-- ordini
+Per rappresentare l'informazione viene sfruttata la logica del primo ordine. L'informazione ricevuta in input (descritta nella consegna) può essere codificata in modo da entrare a far parte della "conoscenza" del sistema formale.
+
+Le informazioni che risultano valide prima, dopo e durante l'esecuzione dell'agente intelligente sono codificate come assiomi propri, esprimendo verità assoluta.
+
+Tabella con esempi di assiomi propri (uno per ogni assioma proprio contemplato)
+
+| assioma                                  | significato                              |
+| ---------------------------------------- | ---------------------------------------- |
+| drone(drone0).                           | drone0 è un drone (vengono creati *n* predicati per definire *n* droni distinti con *n* numero di droni in input) |
+| payload(250).                            | il peso massimo trasportabile da un drone è 250 |
+| product(product0, 35).                   | product0 è un tipo di prodotto e il peso del prodotto è 35 (per ogni tipo di prodotto è definito un predicato simile) |
+| item(item0, product0).                   | item0 è un oggetto e il suo tipo di prodotto è product0 (ogni deposito contiene un numero precisato di istanze dello stesso prodotto, per ogni istanza è definito un predicato simile) |
+| order(order0, [product2], coord(14, 27)). | order0 è un ordine, per essere soddisfatto necessita la consegna di un product2 e le coordinate del cliente sono x:14 y:27 |
+| warehouse(warehouse0, coord(39, 15)).    | warehouse0 è un deposito e le sue coordinate sono x:39 y:15 |
+| coord(X, Y) :- X\<50, X>=0, Y\<50, Y>=0. | la dimensione della griglia è 50x50      |
 
 
 
-
-
-#### 2.1.2 Definizione dello spazio degli stati
+#### 2.1.3 Definizione dello spazio degli stati
 
 Nella rappresentazione di uno stato influiscono i seguenti elementi:
 
@@ -125,19 +132,19 @@ Tali elementi troveranno corrispondenza con formule atomiche definite tramite il
 
 Tabella con esempi di formule atomiche (uno per ogni formula contemplata)
 
-| formula atomica                    | significato                              |
+| formula                            | significato                              |
 | ---------------------------------- | ---------------------------------------- |
 | at( drone0, coord( 1, 2))          | il drone con id drone0 è posizionato nella cella con riga 1 e colonna 2 |
 | at( item1, drone0)                 | il drone con id drone0 sta trasportando un oggetto con id item1 |
 | weighs( drone0, 30)                | il carico del drone con id drone0 è 30   |
 | at( item0, warehouse0)             | l'oggetto con id item0 si trova al deposito con id warehouse0 |
-| at( item3, order0)                 | l'oggetto con id item3 si trova dal cliente dell'ordine con id order0. |
+| at( item3, order0)                 | l'oggetto con id item3 si trova dal cliente dell'ordine con id order0 |
 | need( product0, order0)            | l'ordine con id order0 necessita di un prodotto con id product0 |
 | delivering( item2, order0, drone1) | il drone con id drone0 sta ha preso in carico l'oggetto con item2 per consegnarlo all'ordine con id order0 |
 
 
 
-Es. di un semplice stato
+Es. di un semplice stato del mondo
 
 ```prolog
 at( drone0, coord( 0,0)) ∧ weighs( drone0, 0) ∧ at( item0, warehouse0) ∧ need( product0, order0)
@@ -145,7 +152,7 @@ at( drone0, coord( 0,0)) ∧ weighs( drone0, 0) ∧ at( item0, warehouse0) ∧ n
 
 
 
-Lo stato iniziale corrisponderà alla congiunzione delle formule atomiche rappresentanti i droni posizionati nella cella in alto a sinistra della mappa (coordinate 0,0), i droni scarichi, gli oggetti posizionati nei depositi e le richieste dei clienti.
+Lo stato iniziale corrisponderà alla congiunzione delle formule atomiche rappresentanti i droni posizionati nella cella in alto a sinistra della mappa (coordinate 0,0), i droni scarichi, gli oggetti posizionati nei depositi e le richieste (necessità) dei clienti.
 
 Lo stato finale o di goal corrisponderà alla congiunzione delle formule che vedono i vari oggetti (quelli che fanno parte di ordini) posizionati nelle abitazioni dei clienti. Questa corrisponde, ovviamente, ad una descrizione parziale di uno stato in cui il goal è soddisfatto.
 
