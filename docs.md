@@ -82,17 +82,33 @@ Non partecipando effettivamente al contest, non siamo stati sottoposti agli stre
 
 Il nostro interesse si è spostato sulla ricerca dei comandi da fornire ai droni in modo da completare tutte le consegne in meno turni possibili invece che completare il maggior numero di ordini entro un numero definito di turni.
 
-### 2.1 Progettazione
+### 2.1 La progettazione
 
 #### 2.1.1 La scelta dell'approccio
 
-Per risolvere il problema, si è selezionato un approccio misto che vede alla base un sistema di pianificazione automatica, tecnica largamente utilizzata in ambito di trasporti.
+Per la risoluzione del problema, si è selezionato un approccio misto che vede alla base un sistema di **pianificazione automatica**, tecnica largamente utilizzata in ambito di trasporti.
 
 Costruire un "piano" o una sequenza di azioni da poter fornire ai diversi droni per portare a termine le consegne è quello che ci occorre e la pianificazione come ricerca "ragiona" e agisce prorpio in questi termini.
 
 Risulta immediata la definizione dello spazio degli stati che vedrà ogni stato rappresentato dalla posizione dei prodotti e dei droni sulla mappa. Come conseguenza si avrà una rappresentazione significativa dell'albero di ricerca che vedrà ogni nodo rappresentare uno stato e ogni arco un'azione compiuta da un drone. Definendo lo stato iniziale del mondo come la presenza dei prodotti nei depositi, e lo stato finale come la presenza dei prodotti ordinati nelle abitazioni dei clienti, si ha che la relazione tra la sequenza di operazioni che se eseguite a partire dallo stato iniziale provocano il raggiungimento di uno stato desiderato e le azioni che devono eseguire i vari droni, è immediata e non necessita di traduzione.
 
+Come paradigma di programmazione, per la facilità e correttezza con cui potrà poi essere progettato il pianificatore, si è scelta la **programmazione logica**, in modo da poter rappresentare ed elaborare l'informazione tramite la logica del primo ordine.
+
 Per affinare le capacità di ricerca dell'agente intelligente incaricato della ricerca nello spazio degli stati, l'approccio di pianificazione classico sarà esteso attraverso tecniche di constraint satisfaction.
+
+#### 2.1.2 La conoscenza di base
+
+- payload
+- mappa
+- droni
+- depositi
+- peso prodotti
+- oggetti riferiti ai prodotti
+- ordini
+
+
+
+
 
 #### 2.1.2 Definizione dello spazio degli stati
 
@@ -133,6 +149,10 @@ Lo stato iniziale corrisponderà alla congiunzione delle formule atomiche rappre
 
 Lo stato finale o di goal corrisponderà alla congiunzione delle formule che vedono i vari oggetti (quelli che fanno parte di ordini) posizionati nelle abitazioni dei clienti. Questa corrisponde, ovviamente, ad una descrizione parziale di uno stato in cui il goal è soddisfatto.
 
+Le operazioni che definiscono il passaggio da uno stato all'altro sono due:
+
+- la load( Drone, Prodotto, Deposito),  che causa
+
 
 
 - TODO descrizione formale delle azioni eseguibili
@@ -159,7 +179,7 @@ Lo stato finale o di goal corrisponderà alla congiunzione delle formule che ved
 
 
 
-### 2.3 implementazione
+### 2.2 L'implementazione
 
 #### 2.2.1 La scelta degli strumenti
 
@@ -184,5 +204,5 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 ### Bibliografia
 
-SWI-Prolog,  http://www.swi-prolog.org/. 12 Settembre 2017
+SWI-Prolog,  http://www.swi-prolog.org/. URL consultato il 12 Settembre 2017
 
