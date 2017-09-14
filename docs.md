@@ -77,6 +77,12 @@ La valutazione della soluzione trovata è definita da un punteggio che diminuisc
 
 Risulta chiaro che soluzioni con un punteggio migliore sullo stesso input sono vantaggiose in termini di tempo di consegna degli ordini.
 
+
+
+
+
+
+
 ## 2. La soluzione
 
 Non partecipando effettivamente al contest, non siamo stati sottoposti agli stretti vincoli temporali per sottoporre la nostra soluzione. Per questo abbiamo deciso di rendere il problema più realistico, non considerando la clausola che vedeva non necessario il completamento di tutti gli ordini dati in input, soddisfacendo tutti i clienti.
@@ -178,13 +184,9 @@ La *deliver* corrisponde all'azione di consegnare ad un cliente, un oggetto prec
 
 #### 2.1.4 L'albero di ricerca
 
-- TODO pianificatore foreward DFS
+- TODO pianificatore forward DFS
 
   ​
-
-
-
-
 
 
 
@@ -210,7 +212,9 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 #### 2.3.1 Implementazione di STRIPS
 
-- TODO scrivere qualcosa
+- TODO scrivere qualcosa per introdurre
+
+  ​
 
 ```prolog
  1:  plan(State, Goal, _, Moves, _) :-
@@ -231,14 +235,17 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 La ricerca in profondità si fermerà quando tutti i goal saranno verificati nello stato corrente, questo si verifica quando il predicato di sottoinsieme presente alla riga 2 sarà vero (l'insieme "goal" è sottoinsieme dello stato corrente).
 
-Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato move presente alla riga 8. 
+Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato *move* presente alla riga 8, che cercherà di fare match in maniera non deterministica con una clausola tra la *load* e la *deliver*, andando a recuperare le precondizioni, gli aggiungendi e i cancellandi.
+
+Il predicato *condition_met*, presente alla riga 9, verifica se le precondizioni sono verificate nello stato corrente eseguendo l'unificazione delle variabili presenti.
+
+Il predicato *change_state*, presente alla riga 10, esegue prima la differenza tra lo stato e i cancellandi, e poi inserisce gli aggiungendi creando di fatto il nuovo stato.
+
+A questo punto di va a verificare che il nuovo stato non sia già stato visitato lungo il piano parziale tramite il predicato *not* e *member_state* presente alla riga 11. Se questo è verificato si aggiunge lo stato ad una pila tramte il predicato *stack* (riga 12) e si aggiunge l'operazione alla pila contenente il piano (riga 13).
+
+Alla riga 14 è presente la chiamata ricorsiva con il nuovo stato e lo stesso goal.
 
 
-
-TODO Info da sistemare:
-
-- la ricerca in profondità si fermerà quando tutti i goal saranno verificati nello stato corrente (l'insieme "goal" è sottoinsieme dello stato corrente, riga 2)
-- ​
 
 
 
@@ -249,10 +256,3 @@ TODO Info da sistemare:
 ### Bibliografia
 
 SWI-Prolog,  http://www.swi-prolog.org/. URL consultato il 12 Settembre 2017
-
-
-
-Appunti per progetto: 
-
-- eliminare gli item dalla conoscenza dopo averli consegnati farebbe risparmiare inutili backtracking che si anno per unificazione con item che non sono più nella warehouse
-- ​
