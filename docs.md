@@ -156,22 +156,31 @@ Lo stato iniziale corrisponderà alla congiunzione delle formule atomiche rappre
 
 Lo stato finale o di goal corrisponderà alla congiunzione delle formule che vedono i vari oggetti (quelli che fanno parte di ordini) posizionati nelle abitazioni dei clienti. Questa corrisponde, ovviamente, ad una descrizione parziale di uno stato in cui il goal è soddisfatto.
 
-Le operazioni che definiscono il passaggio da uno stato all'altro sono due:
+Le operazioni che definiscono gli archi tra uno stato e un altro sono la **load** e la **deliver**. Per prima la *load* corrisponde all'azione di caricare su un drone un prodotto da un deposito. Tale operazione deve ottenere successo se è presente almeno un ordine che deve e che può essere soddisfatto. Si cerca e seleziona un drone e un deposito tra i disponibili a soddisfare la richiesta, e si definisce la presa in carico della consegna dell'oggetto da parte del drone. 
 
-- la load( Drone, Prodotto, Deposito),  che causa
-
-
-
-- TODO descrizione formale delle azioni eseguibili
-
-
+| LOAD              |                                          |
+| ----------------- | ---------------------------------------- |
+| **precondizioni** | at(Item, Warehouse), need(NeedId, Product, Order) |
+| **aggiunte**      | at(Item, Drone), weighs(Drone, NewWeight), delivering(NeedId, Item, Order, Drone), at(Drone, Warehouse) |
+| **cancellazioni** | at(Item, Warehouse), weighs(Drone, CurrentWeight), need(NeedId, Product, Order), at(Drone, PrevDroneLocation) |
 
 
 
+La *deliver* corrisponde all'azione di consegnare ad un cliente, un oggetto precedentemente caricato su un drone. Tale operazione deve ottenere successo se è presente almeno un oggetto caricato su un drone. Si cerca e seleziona un drone tra quelli che hanno un oggetto da consegnare, e si effettua la consegna.
+
+| DELIVER           |                                          |
+| ----------------- | ---------------------------------------- |
+| **precondizioni** | at(Item, Drone), delivering(NeedId, Item, Order, Drone) |
+| **aggiunte**      | at(NeedId, Product, Order), weighs(Drone, NewWeight), at(Drone, Order) |
+| **cancellazioni** | at(Item, Drone), weighs(Drone, CurrentWeight), delivering(NeedId, Item, Order, Drone), at(Drone, PrevDroneLocation) |
 
 
 
+#### 2.1.4 L'albero di ricerca
 
+- TODO pianificatore foreward DFS
+
+  ​
 
 
 
@@ -197,11 +206,39 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 - TODO, parlare della parte Python?
 
+
+
 #### 2.3.1 Implementazione di STRIPS
 
+- TODO scrivere qualcosa
+
+```prolog
+ 1:  plan(State, Goal, _, Moves, _) :-
+ 2:      subset(Goal, State),
+ 3:      open('out/{{filename}}.cmds', write, Stream),
+ 4:      export_moves(Moves, Stream),
+ 5:      close(Stream).
+ 6:
+ 7:  plan(State, Goal, Been_list, Moves, MaxTurns) :-
+ 8:      move(State, Name, Preconditions, Actions),
+ 9:      conditions_met(Preconditions, State),
+10:      change_state(State, Actions, Child_state),
+11:      not(member_state(Child_state, Been_list)),
+12:      stack(Child_state, Been_list, New_been_list),
+13:      stack(Name, Moves, New_moves),
+14:      plan(Child_state, Goal, New_been_list, New_moves, MaxTurns).
+```
+
+La ricerca in profondità si fermerà quando tutti i goal saranno verificati nello stato corrente, questo si verifica quando il predicato di sottoinsieme presente alla riga 2 sarà vero (l'insieme "goal" è sottoinsieme dello stato corrente).
+
+Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato move presente alla riga 8. 
 
 
 
+TODO Info da sistemare:
+
+- la ricerca in profondità si fermerà quando tutti i goal saranno verificati nello stato corrente (l'insieme "goal" è sottoinsieme dello stato corrente, riga 2)
+- ​
 
 
 
@@ -213,3 +250,9 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 SWI-Prolog,  http://www.swi-prolog.org/. URL consultato il 12 Settembre 2017
 
+
+
+Appunti per progetto: 
+
+- eliminare gli item dalla conoscenza dopo averli consegnati farebbe risparmiare inutili backtracking che si anno per unificazione con item che non sono più nella warehouse
+- ​
