@@ -79,7 +79,7 @@ Risulta chiaro che soluzioni con un punteggio migliore sullo stesso input sono v
 
 
 
-
+--------
 
 
 
@@ -138,29 +138,29 @@ Tali elementi troveranno corrispondenza con formule atomiche definite tramite il
 
 Tabella con esempi di formule atomiche (uno per ogni formula contemplata)
 
-| formula                            | significato                              |
-| ---------------------------------- | ---------------------------------------- |
-| at( drone0, coord( 1, 2))          | il drone con id drone0 è posizionato nella cella con riga 1 e colonna 2 |
-| at( item1, drone0)                 | il drone con id drone0 sta trasportando un oggetto con id item1 |
-| weighs( drone0, 30)                | il carico del drone con id drone0 è 30   |
-| at( item0, warehouse0)             | l'oggetto con id item0 si trova al deposito con id warehouse0 |
-| at( item3, order0)                 | l'oggetto con id item3 si trova dal cliente dell'ordine con id order0 |
-| need( product0, order0)            | l'ordine con id order0 necessita di un prodotto con id product0 |
-| delivering( item2, order0, drone1) | il drone con id drone0 sta ha preso in carico l'oggetto con item2 per consegnarlo all'ordine con id order0 |
+| formula                           | significato                              |
+| --------------------------------- | ---------------------------------------- |
+| at(drone0, coord(1, 2))           | il drone con id drone0 è posizionato nella cella con riga 1 e colonna 2 |
+| at(item1, drone0)                 | il drone con id drone0 sta trasportando un oggetto con id item1 |
+| weighs(drone0, 30)                | il carico del drone con id drone0 è 30   |
+| at(item0, warehouse0)             | l'oggetto con id item0 si trova al deposito con id warehouse0 |
+| at(item3, order0)                 | l'oggetto con id item3 si trova dal cliente dell'ordine con id order0 |
+| need(product0, order0)            | l'ordine con id order0 necessita di un prodotto con id product0 |
+| delivering(item2, order0, drone1) | il drone con id drone0 sta ha preso in carico l'oggetto con item2 per consegnarlo all'ordine con id order0 |
 
 
 
 Es. di un semplice stato del mondo
 
 ```prolog
-at( drone0, coord( 0,0)) ∧ weighs( drone0, 0) ∧ at( item0, warehouse0) ∧ need( product0, order0)
+at(drone0, coord( 0,0)) ∧ weighs(drone0, 0) ∧ at(item0, warehouse0) ∧ need(product0, order0)
 ```
 
 
 
-Lo stato iniziale corrisponderà alla congiunzione delle formule atomiche rappresentanti i droni posizionati nella cella in alto a sinistra della mappa (coordinate 0,0), i droni scarichi, gli oggetti posizionati nei depositi e le richieste (necessità) dei clienti.
+Lo **stato iniziale** corrisponderà alla congiunzione delle formule atomiche rappresentanti i droni posizionati nella cella in alto a sinistra della mappa (coordinate 0,0), i droni scarichi (senza oggetti caricati), gli oggetti posizionati nei depositi e le richieste (necessità) dei clienti.
 
-Lo stato finale o di goal corrisponderà alla congiunzione delle formule che vedono i vari oggetti (quelli che fanno parte di ordini) posizionati nelle abitazioni dei clienti. Questa corrisponde, ovviamente, ad una descrizione parziale di uno stato in cui il goal è soddisfatto.
+Lo **stato finale**, o di goal, corrisponderà alla congiunzione delle formule che vedono i vari oggetti (quelli che fanno parte di ordini) posizionati nelle abitazioni dei clienti. Questa corrisponde, ovviamente, ad una descrizione parziale di uno stato in cui il goal è soddisfatto.
 
 Le operazioni che definiscono gli archi tra uno stato e un altro sono la **load** e la **deliver**. Per prima la *load* corrisponde all'azione di caricare su un drone un prodotto da un deposito. Tale operazione deve ottenere successo se è presente almeno un ordine che deve e che può essere soddisfatto. Si cerca e seleziona un drone e un deposito tra i disponibili a soddisfare la richiesta, e si definisce la presa in carico della consegna dell'oggetto da parte del drone. 
 
@@ -203,7 +203,7 @@ La *deliver* corrisponde all'azione di consegnare ad un cliente, un oggetto prec
 
 Per la costruzione della soluzione si è scelto di implementare una nostra versione del noto pianificatore automatico STRIPS in Prolog.
 
-Come interprete prolog si è scelta una particolare implementazione chiamata SWI-Prolog. 
+Come interprete Prolog si è scelta una particolare implementazione chiamata SWI-Prolog. 
 SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione più utlizzata nelle università. La sua sintassi corrisponde completamente a quella originale. Il linguaggio estende Prolog aggiungendo alcune caratteristiche utili tra le quali la rappresentazione del testo in formato Unicode per facilitare lo scambio di informazioni con altri linguaggi e quindi paradigmi di programmazione.
 
 - TODO, parlare della parte Python?
@@ -212,9 +212,9 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 #### 2.3.1 Implementazione di STRIPS
 
-- TODO scrivere qualcosa per introdurre
+L'implementazione del pianificatore automatico con SWI-Prolog è banale. In stile Prolog, si definisce un predicato ricorsivo (*plan*), con una regola per il caso base e una regola per il caso ricorsivo. 
 
-  ​
+Codice del pianificatore
 
 ```prolog
  1:  plan(State, Goal, _, Moves, _) :-
@@ -235,9 +235,9 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 La ricerca in profondità si fermerà quando tutti i goal saranno verificati nello stato corrente, questo si verifica quando il predicato di sottoinsieme presente alla riga 2 sarà vero (l'insieme "goal" è sottoinsieme dello stato corrente).
 
-Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato *move* presente alla riga 8, che cercherà di fare match in maniera non deterministica con una clausola tra la *load* e la *deliver*, andando a recuperare le precondizioni, gli aggiungendi e i cancellandi.
+Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato *move* presente alla riga 8, che cercherà di fare match con una clausola tra la *load* e la *deliver*, andando a recuperare le precondizioni, gli aggiungendi e i cancellandi.
 
-Il predicato *condition_met*, presente alla riga 9, verifica se le precondizioni sono verificate nello stato corrente eseguendo l'unificazione delle variabili presenti.
+Il predicato *condition_met*, presente alla riga 9, verifica se le precondizioni sono verificate nello stato corrente eseguendo, in maniera non deterministica, l'unificazione delle variabili presenti.
 
 Il predicato *change_state*, presente alla riga 10, esegue prima la differenza tra lo stato e i cancellandi, e poi inserisce gli aggiungendi creando di fatto il nuovo stato.
 
