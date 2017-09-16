@@ -53,7 +53,7 @@ I droni sono in grado di eseguire i seguenti comandi:
 - **Load:**  Vola fino alla coordinata del deposito specificato e carica un certo numero di prodotti di un certo tipo.
 - **Deliver:** Vola fino alla coordinata del cliente e scarica un certo numero di prodotti di un certo tipo.
 
-#### 1.2.1 L' Input e  l'output
+#### 1.2.1 L'Input e  l'output
 
 Gli elementi ricevuti in input sono:
 
@@ -182,16 +182,16 @@ La *deliver* corrisponde all'azione di consegnare ad un cliente, un oggetto prec
 
 
 
+
+
 #### 2.1.4 L'albero di ricerca
 
 - TODO pianificatore forward DFS
 
-  ​
 
 
 
-
-
+Il numero di operazioni, come visto in precedenza, è fortemente limitato (sono solo due). Questo ha un impatto positivo sul branching factor dell'albero di ricerca. Si ha inoltre che, in generale, il pianificatore durante la costruzione della soluzione andrà a inserire al piano solo operazioni che non verranno ritrattate poiché faranno parte di una delle numerose soluzioni ammissibili per il problema.
 
 
 
