@@ -1,4 +1,5 @@
 import argparse
+from functools import reduce
 
 def get_droneID(drone):
     return drone[5:]
@@ -45,27 +46,30 @@ def parse(str_input):
             line_output += parse_deliver(line)
     return line_output
 
-def compress_two_lines(line1, line2):
-    res = ""
-    line1_tokens = line2.split(' ')
+def compress_lines(accumulated_lines, line2):
+    line1_tokens = accumulated_lines[-1].split(' ')
     line2_tokens = line2.split(' ')
-    if line1[:-1] == line2[:-1]:
-        res += '{} {} {} {} {}\n'.format(
+    if (line1_tokens[0] == line2_tokens[0] and
+        line1_tokens[1] == line2_tokens[1] and
+        line1_tokens[2] == line2_tokens[2] and
+        line1_tokens[3] == line2_tokens[3]): 
+        compressed_line = '{} {} {} {} {}'.format(
             line2_tokens[0],
             line2_tokens[1],
             line2_tokens[2],
             line2_tokens[3],
             int(line1_tokens[4]) + int(line2_tokens[4])
         )
+        accumulated_lines[-1] = compressed_line
+        return accumulated_lines
     else:
-        res += line1 + '\n'
-    return res
+        accumulated_lines.append(line2)
+        return accumulated_lines
 
 def compress(file_output):
-    compressed_output = ""
     lines = file_output.split('\n')
-    for i in range(1, len(lines)):
-        compressed_output += compress_two_lines(lines[i - 1], lines[i])
+    compressed_output_list = reduce(compress_lines, lines[1:-1], [lines[0]])
+    compressed_output = reduce((lambda x, y: x + '\n' + y), compressed_output_list)
     return compressed_output
 
 def main():
