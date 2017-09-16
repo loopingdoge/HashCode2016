@@ -186,12 +186,19 @@ La *deliver* corrisponde all'azione di consegnare ad un cliente, un oggetto prec
 
 #### 2.1.4 L'albero di ricerca
 
-- TODO pianificatore forward DFS
+Il numero di operazioni, come visto in precedenza, è fortemente limitato (sono solo due, load e deliver). Questo ha un impatto positivo sul branching factor dell'albero di ricerca. Tuttavia, lasciare totalmente libera l'unificazione delle variabili, può rendere questo vantaggio non sufficiente alla realizzazione di un pianificatore in avanti che sia efficente. La presenza di un numero alto di tipi di prodotto, aumenta la possibilità di vedere affidato ad un drone la consegna di un prodotto rivolta ad un cliente che non l'ha richiesto, unico fattore che provoca il dover ritrattare operazioni già inserite nel piano (backtraking). E' tuttavia possibile inserire il vincolo che lo impedisce, rendendo di interesse anche l'utilizzo di un **pianificatore in avanti** per l'esplorazione dello spazio degli stati. 
 
+Le unificazioni per le altre variabili possono essere considerate sempre valide poiché stanno a rappresentare esclusivamente delle scelte: la scelta di un drone piuttosto che un altro, la scelta di consegnare un oggetto piuttosto di caricarne un altro, ecc. Quest'ultime azioni saranno sempre possibili al drone,  e rappresentano quindi un passo corretto verso ad una delle soluzioni.
 
+Quest'ultimo fatto porta l'interesse verso la **ricerca in profondità**, non è necessario espandere per livelli occupando memoria inutilmente, proseguire in profondità porterà ad una soluzione. La vera differenza tra la scelta di una operazione e un'altra va vista in termini di impatto nel punteggio finale del piano che si sta costruendo, e non in possibilità o meno di raggiungerne uno valido.
 
+Per guidare l'agente intelligente lungo questa ricerca occorre adottare stategie di unificazione adeguate, che abbiano forte impatto sul punteggio e di conseguenza sul tempo di attesa dei clienti e il consumo delle batterie dei droni che dovranno percorrere meno strada possibile. Quelle proposte da noi e che andremo ad implementare sono:
 
-Il numero di operazioni, come visto in precedenza, è fortemente limitato (sono solo due). Questo ha un impatto positivo sul branching factor dell'albero di ricerca. Si ha inoltre che, in generale, il pianificatore durante la costruzione della soluzione andrà a inserire al piano solo operazioni che non verranno ritrattate poiché faranno parte di una delle numerose soluzioni ammissibili per il problema.
+- scelta del deposito dove recuperare il prodotto in base alla distanza con il cliente,
+- scelta del drone disponibile più vicino al deposito,
+- scelta di utilizzare il drone più vicino al cliente e il deposito più vicino a quel drone,
+- la casualità nel decidere di effettuare consegne anche prima di aver caricato completamente il drone (di aver eseguito tutte le load possibili)
+-  
 
 
 
