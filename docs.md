@@ -198,8 +198,7 @@ Per guidare l'agente intelligente lungo questa ricerca occorre adottare stategie
 - scelta del drone disponibile più vicino al deposito,
 - scelta di utilizzare il drone più vicino al cliente e il deposito più vicino a quel drone,
 - la casualità nel decidere di effettuare consegne anche prima di aver caricato completamente il drone (di aver eseguito tutte le load possibili)
--  
-
+- TODO Altro?
 
 
 
@@ -217,11 +216,11 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 
 
-#### 2.3.1 Implementazione di STRIPS
+#### 2.2.2 Implementazione di STRIPS
 
 L'implementazione del pianificatore automatico con SWI-Prolog è banale. In stile Prolog, si definisce un predicato ricorsivo (*plan*), con una regola per il caso base e una regola per il caso ricorsivo. 
 
-Codice del pianificatore
+Codice del pianificatore, [ Fig.1 ]
 
 ```prolog
  1:  plan(State, Goal, _, Moves, _) :-
@@ -244,7 +243,7 @@ La ricerca in profondità si fermerà quando tutti i goal saranno verificati nel
 
 Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato *move* presente alla riga 8, che cercherà di fare match con una clausola tra la *load* e la *deliver*, andando a recuperare le precondizioni, gli aggiungendi e i cancellandi.
 
-Il predicato *condition_met*, presente alla riga 9, verifica se le precondizioni sono verificate nello stato corrente eseguendo, in maniera non deterministica, l'unificazione delle variabili presenti.
+Il predicato *condition_met*, presente alla riga 9, verifica se le precondizioni sono verificate nello stato corrente eseguendo, in maniera non deterministica, l'unificazione delle variabili non ancora assegnate.
 
 Il predicato *change_state*, presente alla riga 10, esegue prima la differenza tra lo stato e i cancellandi, e poi inserisce gli aggiungendi creando di fatto il nuovo stato.
 
@@ -253,6 +252,62 @@ A questo punto di va a verificare che il nuovo stato non sia già stato visitato
 Alla riga 14 è presente la chiamata ricorsiva con il nuovo stato e lo stesso goal.
 
 
+
+#### 2.2.3 Implementazione della ricerca
+
+Come riportato al paragrafo 2.1.4, per "guidare" la ricerca della sequenza di azioni si interviene sull'unificazione delle variabili. A livello imlementativo questo si ottiene inserendo nel corpo della regola *move* (richiamata alla riga 8 Fig.1) dei predicati al fine di implementare le strategie individuate.
+
+Al fine di studio, la **prima strategia** considerata è quella di non prevedere alcuna strategia, e quindi di lasciare libera la ricerca. Il planner in questione è presente nel file "backtrack_stupid_planner.pl", l'unico controllo che effettua è quello sul peso del carico del drone (non si permette al drone di caricare oggetti se non può fisicamente). <u>Questo vincolo sarà implementato anche da tutte le successive strategie</u>.
+
+Codice delle azioni del pianificatore *backtrack_stupid_planner.pl*, [ Fig.2 ]
+
+```prolog
+ 1:	 move( State,
+ 2:		load(Drone, Product, Warehouse),
+ 3:  	... precondizioni, effetti ...
+ 4:  ) :-
+ 5:     drone(Drone), 
+ 6:		warehouse(Warehouse, _), 
+ 7:		order(Order, _, _), 
+ 8:		item(Item, Product),
+ 9:  	drone_load(State, Drone, CurrentWeight),
+10:   	payload(MaxWeight),
+11:    	product(Product, ProductWeight),
+12:    	CurrentWeight + ProductWeight #=< MaxWeight,
+13:    	NewWeight is CurrentWeight + ProductWeight.
+14:
+15:	 move( State,
+16:		deliver(Drone, Product, Order),
+17:  	... precondizioni, effetti ...
+18:  ) :-
+19:		drone_load(State, Drone, CurrentWeight),
+20:     product(Product, ProductWeight),
+21:     NewWeight is CurrentWeight - ProductWeight.
+```
+
+Il predicato *drone_load*, presente alla riga 9, recupera il peso attualemente caricato sul drone recuperato alla riga 5. Alla riga 11 si recupera il peso del prodotto che si vuole caricare e alla riga 12 si verifica che il peso non sia eccessivo.
+
+La **seconda strategia** corrisponde ad un miglioramento sostanziale della prima. Introduce il vincolo che impedisce la possibilità di affidare ad un drone consegne di prodotti a clienti che non l'hanno richiesto, limitando notevolmente lo spazio degli stati. Il planner in questione è presente nel file "stupid_planner.pl". <u>Questo controllo sarà implementato da tutte le successive strategie</u>.
+
+Codice delle azioni del pianificatore *stupid_planner.pl*, [ Fig.2 ]
+
+```prolog
+ 1:	 move(
+ 2:  	State,
+ 3:  	load(Drone, Product, Warehouse),
+ 4:  	... precondizioni, effetti ...
+ 5:	 ) :-
+ 6:  	drone(Drone),
+ 7:  	warehouse(Warehouse, _),
+ 8:  	order(Order, ProductList, _),
+ 9:  	member(Product, ProductList),
+10:   	product(Product, ProductWeight),
+11:  	item(Item, Product),
+12:		... vincoli peso ...
+13:    	requested_product_and_order(State, Order, Product, NeedId).
+```
+
+Il predicato *member*, presente alla riga 9, verifica che il prodotto sia effettivamente stato richiesto dall'ordine selezionato sopra. Il predicato *requested_product_and_order*, presente alla riga 13 verifica che l'ordine selezionato necessiti ancora di prodotti di un certo tipo.
 
 
 
