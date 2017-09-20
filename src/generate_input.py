@@ -29,7 +29,7 @@ def warehouses_lines(warehouses_number, products_number, rows, cols, max_stocks)
             items_per_product = warehouse_items_per_product
         else:
             items_per_product = [x + y for x, y in zip(warehouse_items_per_product, items_per_product)]
-        
+
     return res, items_per_product
 
 def order_lines(rows, cols, products_number, items_per_product, max_items_per_order):
@@ -60,7 +60,7 @@ def orders_lines(orders_number, products_number, rows, cols, items_per_product, 
 
 def main():
     max_stocks = 1
-    max_items_per_order = 1
+    max_items_per_order = 3
     config = {
         "rows": int(argv[1]),
         "cols": int(argv[2]),

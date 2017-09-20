@@ -238,8 +238,8 @@ move(
     payload(MaxWeight),
     product(Product, ProductWeight),
     CurrentWeight + ProductWeight #=< MaxWeight,
-    NewWeight is CurrentWeight + ProductWeight.
-    %requested_product_and_order(State, Order, Product, NeedId).
+    NewWeight is CurrentWeight + ProductWeight,
+    requested_product_and_order(State, Order, Product, NeedId).
 
 move(
     State,

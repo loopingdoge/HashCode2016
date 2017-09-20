@@ -301,7 +301,7 @@ for i,order in enumerate(ordersList):
 #     log("order {}:".format(i))
 #     log(order)
 
-MATRIX_SIZE_LIMIT = max(10000, T)
+MATRIX_SIZE_LIMIT = max(1000000, T)
 
 matrix = [[] for y in range(MATRIX_SIZE_LIMIT)]
 

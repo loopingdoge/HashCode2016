@@ -287,7 +287,7 @@ Codice delle azioni del pianificatore *backtrack_stupid_planner.pl*, [ Fig.2 ]
 
 Il predicato *drone_load*, presente alla riga 9, recupera il peso attualemente caricato sul drone recuperato alla riga 5. Alla riga 11 si recupera il peso del prodotto che si vuole caricare e alla riga 12 si verifica che il peso non sia eccessivo.
 
-La **seconda strategia** corrisponde ad un miglioramento sostanziale della prima. Introduce il vincolo che impedisce la possibilità di affidare ad un drone consegne di prodotti a clienti che non l'hanno richiesto, limitando notevolmente lo spazio degli stati. Il planner in questione è presente nel file "stupid_planner.pl". <u>Questo controllo sarà implementato da tutte le successive strategie</u>.
+La **seconda strategia** corrisponde ad un miglioramento sostanziale della prima. Introduce il vincolo che impedisce la possibilità di affidare ad un drone consegne di prodotti a clienti che non l'hanno richiesto, limitando notevolmente lo spazio degli stati. L'implementazione della strategia è presente nel file "stupid_planner.pl". <u>Questo controllo sarà implementato da tutte le successive strategie</u>.
 
 Codice delle azioni del pianificatore *stupid_planner.pl*, [ Fig.2 ]
 
@@ -308,6 +308,97 @@ Codice delle azioni del pianificatore *stupid_planner.pl*, [ Fig.2 ]
 ```
 
 Il predicato *member*, presente alla riga 9, verifica che il prodotto sia effettivamente stato richiesto dall'ordine selezionato sopra. Il predicato *requested_product_and_order*, presente alla riga 13 verifica che l'ordine selezionato necessiti ancora di prodotti di un certo tipo.
+
+La **terza strategia** è la prima che introduce l'idea di fare percorrere ai droni meno strada possibile, questione alla base dei trasporti. L'implementazione della strategia è presente nel file "planner.pl".
+
+Codice delle azioni del pianificatore *planner.pl*, [ Fig.3 ]
+
+```prolog
+ 1:	 move(
+ 2:  	State,
+ 3:  	load(Drone, Product, Warehouse),
+ 4:  	... precondizioni, effetti ...
+ 5:	 ) :-
+ 6:  	requested_product_and_order(State, Order, Product, NeedId),
+ 7:  	nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
+ 8:   	nearest_drone_from_warehouse(State, Warehouse, , Drone, CurrentWeight, NewWeight, Distance),
+ 9:    	drone_location(State, Drone, PrevDroneLocation),
+10:    	... vincoli peso ...
+```
+
+Il predicato *nearest_warehouse_from_order* unifica la variabile "Warehouse" con il deposito più vicino al cliente. Il predicato  *nearest_drone_from_warehouse* unifica la variabile "Drone" con il drone disponibile (con possibilità di caricare il prodotto), più vicino al deposito.
+
+Per costruzione, il pianificatore non aggiunge il piano azioni di *deliver* fino a che ci sia la possibilità di effettuare una *load*. Per contrastare questa priorità, la **quarta strategia** introduce un elemento aleatorio alla scelta dell'azione potenziale da aggiungere al piano. L'implementazione della strategia è presente nel file "random_action_planner.pl".
+
+
+
+TODO cosa fa drones_planner.pl ?
+La **quinta strategia** ...
+
+
+
+### 2.3 Test
+
+Tramite uno script verranno creati diversi input sulla quale le diverse strategie saranno confrontate in termini di tempo e punteggio. Ogni input corrisponderà ad una sessione di prova diversa.
+
+Le varie sessioni verranno effettuate su una mappa 50x50, dove saranno dislocati 5 depositi contenenti prodotti di 5 tipi diversi. Il numero di oggetti per ordine varia da 1 a 3, gli oggetti da consegnare variano tra il numero di ordini e il numero di ordini moltiplicato per 3.
+
+Nella **prima sessione** di prove sarà presente un solo drone ad effettuare le consegne.
+
+Tabella che mostra i risultati al variare del numero di ordini da gestire.
+
+| strategia                | tempo 30 ord. | punteggio 30 ord. | tempo 120 ord | punteggio 120 ord. | tempo 480 ord | punteggio 480 ord. |
+| ------------------------ | :-----------: | :---------------: | :-----------: | :----------------: | :-----------: | :----------------: |
+| backtrack_stupid_planner |    8.606s     |       1951        |      27m      |        1563        |   n.d. >1h    |        n.d.        |
+| stupid_planner           |    5.586s     |       1968        |    18m54s     |        1669        |   n.d. >1h    |        n.d.        |
+| planner                  |    1.183s     |       2413        |      58s      |        7904        |    13m53s     |        3611        |
+| random_action_planner    |    0.885s     |       2390        |    32.350s    |        3572        |     9m29s     |        3630        |
+| stupid_drones_planner    |    5.593s     |       1968        |    59.785s    |        4423        |    n.d >1h    |        n.d         |
+| drones_planner           |    1.152s     |       2579        |    42.991s    |        4423        |     12m7s     |        6598        |
+
+
+
+Nella **seconda sessione** di prove saranno presenti 5 droni.
+
+Tabella che mostra i risultati al variare del numero di ordini da gestire.
+
+| strategia                | tempo 30 ord. | punteggio 30 ord. | tempo 120 ord | punteggio 120 ord. | tempo 480 ord | punteggio 480 ord. |
+| ------------------------ | :-----------: | :---------------: | :-----------: | :----------------: | :-----------: | :----------------: |
+| backtrack_stupid_planner |   n.d. >1h    |       n.d.        |     n.d.      |        n.d.        |     n.d.      |        n.d.        |
+| stupid_planner           |    34.695s    |       2660        |   n.d. >1h    |        n.d.        |     n.d.      |        n.d.        |
+| planner                  |    1.660s     |       2590        |    37.179s    |        6554        |     16m7s     |        6133        |
+| random_action_planner    |    1.429s     |       2763        |    29.076s    |       10200        |     8m8s      |       16677        |
+| stupid_drones_planner    |    9.970s     |       2699        |   n.d. >1h    |        n.d         |     n.d.      |        n.d.        |
+| drones_planner           |    1.560s     |       2809        |    45.940s    |       10475        |    14m36s     |       15475        |
+
+
+
+Nella **terza sessione** di prove saranno presenti 40 droni. 
+
+| strategia             | tempo 30 ord. | punteggio 30 ord. | tempo 120 ord | punteggio 120 ord. | tempo 480 ord | punteggio 480 ord. |
+| --------------------- | :-----------: | :---------------: | :-----------: | :----------------: | :-----------: | :----------------: |
+| planner               |    1.588s     |       2863        |    34.543s    |        6650        |     12m1s     |       13492        |
+| random_action_planner |    1.597s     |       2842        |    22.438s    |       11397        |     6m25s     |       27385        |
+| drones_planner        |    1.644s     |       2884        |    34.773s    |       11701        |    11m35s     |       28839        |
+
+
+
+Nella **quarta sessione** di prove saranno presenti 40 droni e saranno 20 le tipologie di prodotti.
+
+| strategia             | tempo 30 ord. | punteggio 30 ord. | tempo 120 ord | punteggio 120 ord. | tempo 480 ord | punteggio 480 ord. |
+| --------------------- | :-----------: | :---------------: | :-----------: | :----------------: | :-----------: | :----------------: |
+| planner               |    2.567s     |       2867        |     3m13s     |        9063        |    41m53s     |       12602        |
+| random_action_planner |    2.480s     |       2840        |     1m36s     |       10998        |    22m52s     |       26725        |
+| drones_planner        |    2.732s     |       2868        |     2m56s     |       11710        |    35m35s     |       28004        |
+
+
+
+- TODO note:
+
+
+- backtrack_stupid_planner, stupid_planner e stupid_drones_planner risentono gravemente dell'aumento del numero di droni.
+- drones_planner contiene algoritmi pesanti ma ottiene punteggi migliori.
+- l'elemento randomico non è controllabile, tempi ridotti ma punteggi a volte migliori a volte peggiori
 
 
 
