@@ -1,0 +1,9 @@
+version: '3'
+services:
+  hc:
+    image: hashcode2016
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/project/
+
