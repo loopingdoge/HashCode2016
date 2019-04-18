@@ -15,7 +15,7 @@ Make sure you have already installed both [Docker Engine](https://docs.docker.co
 
 2. Run the service detached:
     ```bash
-    docker compose up -d
+    docker-compose up -d
     docker ps # check the container status
     ```
 

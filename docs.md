@@ -97,7 +97,9 @@ Per la risoluzione del problema, si è selezionato un approccio misto che vede a
 
 Costruire un "piano", o una sequenza di azioni, da poter fornire ai diversi droni per portare a termine le consegne è quello che ci occorre, e la pianificazione come ricerca "ragiona" e agisce prorpio in questi termini.
 
-Risulta immediata la definizione dello spazio degli stati, che vedrà ogni stato rappresentato dalla posizione dei prodotti e dei droni sulla mappa. Come conseguenza, si avrà una rappresentazione significativa dell'albero di ricerca, che vedrà ogni nodo rappresentare uno stato e ogni arco un'azione compiuta da un drone. Definendo lo stato iniziale del mondo come la presenza dei prodotti nei depositi, e lo stato finale come la presenza dei prodotti ordinati nelle abitazioni dei clienti, si ha che la relazione tra la sequenza di operazioni che se eseguite a partire dallo stato iniziale provocano il raggiungimento di uno stato desiderato, e le azioni che devono eseguire i vari droni, è immediata e non necessita di alcuna traduzione.
+Risulta immediata la definizione dello spazio degli stati, che vedrà ogni stato rappresentato dalla posizione dei prodotti e dei droni sulla mappa. Come conseguenza, si avrà una rappresentazione significativa dell'albero di ricerca, che vedrà ogni nodo rappresentare uno stato e ogni arco un'azione compiuta da un drone. 
+Lo stato iniziale viene definito come la presenza dei prodotti nei vari magazzini come specificato dall'input, mentre lo stato finale come la presenza dei prodotti ordinati nelle abitazioni dei clienti.
+La sequenza di operazioni che, se eseguite a partire dallo stato iniziale, provocano il raggiungimento di uno stato desiderato, corrisponderà perfettamente con le azioni che i droni devono eseguire.
 
 Come paradigma di programmazione, per la facilità e correttezza con cui potrà poi essere progettato il pianificatore, si è scelta la **programmazione logica**, in modo da poter rappresentare ed elaborare l'informazione tramite la logica del primo ordine.
 
@@ -153,7 +155,7 @@ Tabella con esempi di formule atomiche (uno per ogni formula contemplata)
 Es. di un semplice stato del mondo
 
 ```prolog
-at(drone0, coord( 0,0)) ∧ weighs(drone0, 0) ∧ at(item0, warehouse0) ∧ need(product0, order0)
+at(drone0, coord(0,0)) ∧ weighs(drone0, 0) ∧ at(item0, warehouse0) ∧ need(product0, order0)
 ```
 
 
@@ -186,7 +188,7 @@ La *deliver* corrisponde all'azione di consegnare ad un cliente, un oggetto prec
 
 Il numero di operazioni, come visto in precedenza, è fortemente limitato (sono solo due, load e deliver). Questo ha un impatto positivo sul branching factor dell'albero di ricerca. Tuttavia, lasciare totalmente libera l'unificazione delle variabili, può rendere questo vantaggio non sufficiente alla realizzazione di un pianificatore in avanti che sia efficente. La presenza di un numero elevato di tipi di prodotto, o di droni, aumenta la possibilità di vedere affidato ad un drone la consegna di un prodotto rivolta ad un cliente che non l'ha richiesto. Questo è l'unico fattore che provoca il dover ritrattare operazioni già inserite nel piano (backtraking). E' tuttavia possibile inserire vincoli che lo impediscono, rendendo di interesse anche l'utilizzo di un **pianificatore in avanti** per l'esplorazione dello spazio degli stati. 
 
-Le unificazioni per le altre variabili, possono essere considerate sempre valide, poiché stanno a rappresentare esclusivamente delle scelte: la scelta di un drone piuttosto che un altro, la scelta di consegnare un oggetto caricato piuttosto di caricarne altri, ecc. Quest'ultime azioni saranno sempre possibili al drone,  e rappresentano quindi un passo corretto verso ad una delle soluzioni.
+Le unificazioni per le altre variabili, possono essere considerate sempre valide, poiché stanno a rappresentare esclusivamente delle scelte: la scelta di un drone piuttosto che un altro, la scelta di consegnare un oggetto caricato piuttosto di caricarne altri, ecc. Quest'ultime azioni saranno sempre possibili al drone, e rappresentano quindi un passo corretto verso ad una delle soluzioni.
 
 Quest'ultimo fatto porta l'interesse verso la **ricerca in profondità**, non è necessario espandere per livelli occupando memoria inutilmente, proseguire in profondità porterà ad una soluzione. La vera differenza tra la scelta di una operazione e un'altra va vista in termini di impatto nel punteggio finale del piano che si sta costruendo, e non in possibilità o meno di raggiungerne uno valido.
 
@@ -209,7 +211,7 @@ Per guidare l'agente intelligente lungo questa ricerca occorre adottare stategie
 Per la costruzione della soluzione si è scelto di implementare una nostra versione del noto pianificatore automatico STRIPS in Prolog.
 
 Come interprete Prolog si è scelta una particolare implementazione chiamata SWI-Prolog. 
-SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione più utlizzata nelle università. La sua sintassi corrisponde completamente a quella originale. Il linguaggio estende Prolog aggiungendo alcune caratteristiche utili tra le quali la rappresentazione del testo in formato Unicode per facilitare lo scambio di informazioni con altri linguaggi e quindi paradigmi di programmazione.
+SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione più utlizzata in ambito universitario. La sua sintassi corrisponde in totalità a quella originale. Il linguaggio estende Prolog aggiungendo alcune caratteristiche utili tra le quali la rappresentazione del testo in formato Unicode per facilitare lo scambio di informazioni con altri linguaggi e quindi paradigmi di programmazione.
 
 - TODO, parlare della parte Python?
 
@@ -217,7 +219,7 @@ SWI-Prolog presenta una storia trentennale, e risulta essere l'implementazione p
 
 #### 2.2.2 Implementazione di STRIPS
 
-L'implementazione del pianificatore automatico con SWI-Prolog è banale. In stile Prolog, si definisce un predicato ricorsivo (*plan*), con una regola per il caso base e una regola per il caso ricorsivo. 
+L'implementazione del pianificatore automatico con SWI-Prolog risulta banale. In stile Prolog, si definisce un predicato ricorsivo (*plan*), con una regola per il caso base e una regola per il caso ricorsivo. 
 
 Codice del pianificatore, [ Fig.1 ]
 
@@ -240,13 +242,13 @@ Codice del pianificatore, [ Fig.1 ]
 
 La ricerca in profondità si fermerà quando tutti i goal saranno verificati nello stato corrente, questo si verifica quando il predicato di sottoinsieme presente alla riga 2 sarà vero (l'insieme "goal" è sottoinsieme dello stato corrente).
 
-Fin quando questo non è verificato, si va a selezionare un operatore tramite il predicato *move* presente alla riga 8, che cercherà di fare match con una clausola tra la *load* e la *deliver*, andando a recuperare le precondizioni, gli aggiungendi e i cancellandi.
+Fin quando questo non risulta vero, si va a selezionare un operatore tramite il predicato *move* (riga 8), che cercherà di fare match con una clausola tra la *load* e la *deliver*, andando a recuperare le precondizioni, gli aggiungendi e i cancellandi.
 
-Il predicato *condition_met*, presente alla riga 9, verifica se le precondizioni sono verificate nello stato corrente eseguendo, in maniera non deterministica, l'unificazione delle variabili non ancora assegnate.
+Il predicato *condition_met* (riga 9), verifica se le precondizioni sono verificate nello stato corrente eseguendo, in maniera non deterministica, l'unificazione delle variabili non ancora assegnate.
 
 Il predicato *change_state*, presente alla riga 10, esegue prima la differenza tra lo stato e i cancellandi, e poi inserisce gli aggiungendi creando di fatto il nuovo stato.
 
-A questo punto si va a verificare che il nuovo stato non sia già stato visitato lungo il piano parziale tramite il predicato *not* e *member_state* presente alla riga 11. Se questo è verificato si aggiunge lo stato ad una pila tramte il predicato *stack* (riga 12), e si aggiunge l'operazione alla pila contenente il piano (riga 13).
+A questo punto si va a verificare che il nuovo stato non sia già stato visitato lungo il piano parziale tramite il predicato *not* e *member_state* (riga 11). Se questo è verificato si aggiunge lo stato ad una pila tramte il predicato *stack* (riga 12), e si aggiunge l'operazione alla pila contenente il piano (riga 13).
 
 Alla riga 14 è presente la chiamata ricorsiva con il nuovo stato e lo stesso goal.
 
@@ -261,67 +263,67 @@ Al fine di studio, la **prima strategia** considerata è quella di non prevedere
 Codice delle azioni del pianificatore *backtrack_stupid_planner.pl*, [ Fig.2 ]
 
 ```prolog
- 1:	 move( State,
- 2:		load(Drone, Product, Warehouse),
- 3:  	... precondizioni, effetti ...
- 4:  ) :-
- 5:     drone(Drone), 
- 6:		warehouse(Warehouse, _), 
- 7:		order(Order, _, _), 
- 8:		item(Item, Product),
- 9:  	drone_load(State, Drone, CurrentWeight),
-10:   	payload(MaxWeight),
-11:    	product(Product, ProductWeight),
-12:    	CurrentWeight + ProductWeight #=< MaxWeight,
-13:    	NewWeight is CurrentWeight + ProductWeight.
+ 1: move(State,
+ 2:      load(Drone, Product, Warehouse),
+ 3:      ... precondizioni, effetti ...
+ 4: ) :-
+ 5:      drone(Drone), 
+ 6:      warehouse(Warehouse, _), 
+ 7:      order(Order, _, _), 
+ 8:      item(Item, Product),
+ 9:      drone_load(State, Drone, CurrentWeight),
+10:      payload(MaxWeight),
+11:      product(Product, ProductWeight),
+12:      CurrentWeight + ProductWeight #=< MaxWeight,
+13:      NewWeight is CurrentWeight + ProductWeight.
 14:
-15:	 move( State,
-16:		deliver(Drone, Product, Order),
-17:  	... precondizioni, effetti ...
-18:  ) :-
-19:		drone_load(State, Drone, CurrentWeight),
-20:     product(Product, ProductWeight),
-21:     NewWeight is CurrentWeight - ProductWeight.
+15: move(State,
+16:      deliver(Drone, Product, Order),
+17:      ... precondizioni, effetti ...
+18: ) :-
+19:      drone_load(State, Drone, CurrentWeight),
+20:      product(Product, ProductWeight),
+21:      NewWeight is CurrentWeight - ProductWeight.
 ```
 
-Il predicato *drone_load*, presente alla riga 9, recupera il peso attualemente caricato sul drone (drone recuperato alla riga 5). Alla riga 11 si recupera il peso del prodotto che si vuole caricare, e alla riga 12 si verifica che il peso non sia eccessivo.
+Il predicato *drone_load* (riga 9), recupera il peso attualemente caricato sul drone (drone recuperato alla riga 5). Alla riga 11 si recupera il peso del prodotto che si vuole caricare, e alla riga 12 si verifica che il peso non sia eccessivo.
 
 La **seconda strategia** corrisponde ad un miglioramento sostanziale della prima. Introduce il vincolo che impedisce la possibilità di affidare ad un drone consegne di prodotti a clienti che non l'hanno richiesto, limitando notevolmente lo spazio degli stati. L'implementazione della strategia è presente nel file "stupid_planner.pl". <u>Questo controllo sarà implementato da tutte le successive strategie</u>.
 
 Codice delle azioni del pianificatore *stupid_planner.pl*, [ Fig.2 ]
 
 ```prolog
- 1:	 move(
- 2:  	State,
+ 1: move(
+ 2:     State,
  3:  	load(Drone, Product, Warehouse),
  4:  	... precondizioni, effetti ...
- 5:	 ) :-
+ 5: ) :-
  6:  	drone(Drone),
  7:  	warehouse(Warehouse, _),
  8:  	order(Order, ProductList, _),
  9:  	member(Product, ProductList),
 10:   	product(Product, ProductWeight),
 11:  	item(Item, Product),
-12:		... vincoli peso ...
+12:     ... vincoli peso ...
 13:    	requested_product_and_order(State, Order, Product, NeedId).
 ```
 
-Il predicato *member*, presente alla riga 9, verifica che il prodotto sia effettivamente stato richiesto dall'ordine selezionato sopra. Il predicato *requested_product_and_order*, presente alla riga 13 verifica che l'ordine selezionato necessiti ancora di prodotti di un certo tipo.
+Il predicato *member* (riga 9), verifica che il prodotto sia effettivamente stato richiesto dall'ordine selezionato sopra. Il predicato *requested_product_and_order* (riga 13) verifica che l'ordine selezionato necessiti ancora di prodotti di un certo tipo.
 
 La **terza strategia** è la prima che introduce l'idea di fare percorrere ai droni meno strada possibile, questione alla base dei trasporti. L'implementazione della strategia è presente nel file "planner.pl".
 
 Codice delle azioni del pianificatore *planner.pl*, [ Fig.3 ]
 
 ```prolog
- 1:	 move(
+ 1: move(
  2:  	State,
  3:  	load(Drone, Product, Warehouse),
  4:  	... precondizioni, effetti ...
- 5:	 ) :-
- 6:  	requested_product_and_order(State, Order, Product, NeedId),
- 7:  	nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
- 8:   	nearest_drone_from_warehouse(State, Warehouse, , Drone, CurrentWeight, NewWeight, Distance),
- 9:    	drone_location(State, Drone, PrevDroneLocation),
+ 5: ) :-
+ 6:     requested_product_and_order(State, Order, Product, NeedId),
+ 7:     nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
+ 8:     nearest_drone_from_warehouse(State, Warehouse, , Drone, CurrentWeight, NewWeight, Distance),
+ 9:     drone_location(State, Drone, PrevDroneLocation),
 10:    	... vincoli peso ...
 ```
 
