@@ -18,25 +18,6 @@ empty_stack([]).
 
 stack(E, S, [E|S]).
 
-count_drone_turns([], _, Turns) :- Turns is 0.
-count_drone_turns([_|T], Drone, Turns) :-
-    count_drone_turns(T, Drone, OtherTurns),
-    Turns is OtherTurns.
-count_drone_turns([load(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
-    count_drone_turns(T, Drone, OtherTurns),
-    Turns is MoveTurns + OtherTurns.
-count_drone_turns([deliver(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
-    count_drone_turns(T, Drone, OtherTurns),
-    Turns is MoveTurns + OtherTurns.
-count_drone_max_turns(Moves, Drone, Turns) :-
-    findall(T, count_drone_turns(Moves, Drone, T), TurnsList),
-    sort(TurnsList, SortedTurns),
-    reverse(SortedTurns, [Turns|_]).
-turns_used(Moves, Turns) :-
-    findall(T, (drone(Drone), count_drone_max_turns(Moves, Drone, T)), TurnsList),
-    sort(TurnsList, SortedTurns),
-    reverse(SortedTurns, [Turns|_]).
-
 export_moves(Mov, _) :- empty_stack(Mov).
 export_moves(Mov, Stream) :-
     stack(E, Rest, Mov),
@@ -49,28 +30,19 @@ export_moves(Mov, Stream) :-
 %%
 plan(State, Goal, _, Moves, _) :-
     subset(Goal, State),
-    %turns_used(Moves, UsedTurns),
-    %UsedTurns #=< MaxTurns,
-    %% write(State), nl,
     open('out/{{filename}}.cmds', write, Stream),
     export_moves(Moves, Stream),
     close(Stream)
     {{ debug }}.
-    %write('Turns: '), write(UsedTurns).
 
 %%
 % When the Goal state is a subset of the valued state
 % Use a defined action to move through the state-space
 %%
-plan(State, Goal, Been_list, Moves, MaxTurns) :-
-    %% write(State), nl, nl,
-    %% write(Been_list), nl,
-    % turns_used(Moves, UsedTurns),
-    %UsedTurns #=< MaxTurns,
+plan(State, Goal, _, Moves, MaxTurns) :-
 
     nb_getval(counterLoad, CounterValue), % number of items loaded by the drones at the moment
 
-    % needsNum(X),
 %   write(CounterValue), nl,
 
     MovesNames = [load, deliver],
@@ -96,11 +68,12 @@ plan(State, Goal, Been_list, Moves, MaxTurns) :-
     ),
 
     conditions_met(Preconditions, State),
+    write(Name), nl,
     change_state(State, Actions, Child_state),
-    not(member_state(Child_state, Been_list)),
-    stack(Child_state, Been_list, New_been_list),
+    % not(member_state(Child_state, Been_list)),
+    % stack(Child_state, Been_list, New_been_list),
     stack(Name, Moves, New_moves),
-    plan(Child_state, Goal, New_been_list, New_moves, MaxTurns).
+    plan(Child_state, Goal, _, New_moves, MaxTurns).
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
@@ -161,14 +134,6 @@ requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_
 delivering_product_and_order([], _, _, _, _) :- fail, !.
 delivering_product_and_order([delivering(NeedId, Item, Order, Drone)|_], Order, Item, NeedId, Drone) :- !.
 delivering_product_and_order([_|T], Order, Item, NeedId, Drone) :- delivering_product_and_order(T, Order, Item, NeedId, Drone).
-
-%%
-% True if the order requires another product of that type
-%%
-need_to_load_more(State, Order, Product) :-
-    order(Order, _, _),
-    member(need(_, Product, Order), State),
-    !.
 
 %%
 % return the Euclidean distance between two coordinates
