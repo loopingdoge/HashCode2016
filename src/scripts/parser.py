@@ -12,7 +12,7 @@ problem_name = args.problem
 planner_name = args.planner
 debug = args.debug
 
-planner_path = 'src/' + planner_name + '.pl'
+planner_path = 'src/planners/' + planner_name + '.pl'
 outfile_path = 'out/' + problem_name + '.pl'
 
 needsNum = 0

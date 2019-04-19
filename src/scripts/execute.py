@@ -28,7 +28,7 @@ print("\n" + ' '.join(planner_name.capitalize().split("_")))
 if os.path.isfile(outPlannerFilePath):
     os.remove(outPlannerFilePath)
 quiet_print("\n- 1/4 PARSING INPUT FILE   (in/{}.in -> out/{}.pl)".format(problem_name, problem_name))
-subprocess.call("python ./src/parser.py --planner {} {} {}".format(planner_name, debug, problem_name).split())
+subprocess.call("python ./src/scripts/parser.py --planner {} {} {}".format(planner_name, debug, problem_name).split())
 
 # continue only if the previous phase is completed correctly
 if os.path.isfile(outPlannerFilePath):
@@ -37,7 +37,7 @@ if os.path.isfile(outPlannerFilePath):
         os.remove(outPlannerSolutionFilePath)
     quiet_print("\n- 2/4 STARTED PLANNING     (out/{}.pl -> out/{}.cmds)".format(problem_name, problem_name))
 
-    subprocess.call("swipl -l out/{}.pl -g test -t halt -q".format(problem_name).split())
+    subprocess.call("swipl -G100g -T20g -L2g -l out/{}.pl -g test -t halt -q".format(problem_name).split())
 else:
     print("ERROR: Can't generate the planner for the input problem")
     sys.exit(0)
@@ -48,11 +48,11 @@ if os.path.isfile(outPlannerSolutionFilePath):
     if os.path.isfile(outParsedSolutionFilePath):
         os.remove(outParsedSolutionFilePath)
     quiet_print("\n- 3/4 PARSING OUTPUT FILE  (out/{}.cmds -> out/{}.out)".format(problem_name, problem_name))
-    subprocess.call("python ./src/cmds2out.py {}".format(problem_name).split())
+    subprocess.call("python ./src/scripts/cmds2out.py {}".format(problem_name).split())
 else:
     print("ERROR: Can't generate a solution for the input problem")
     sys.exit(0)
 
 quiet_print("\n- 4/4 CALCULATING SCORE    (out/{}.out -> console)".format(problem_name))
 sys.stdout.flush()
-subprocess.call("python ./src/scoring.py {} {}".format(debug, problem_name).split())
+subprocess.call("python ./src/scripts/scoring.py {} {}".format(debug, problem_name).split())
