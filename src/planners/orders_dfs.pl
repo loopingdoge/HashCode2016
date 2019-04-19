@@ -62,7 +62,7 @@ plan(State, Goal, _, Moves, _) :-
 % When the Goal state is a subset of the valued state
 % Use a defined action to move through the state-space
 %%
-plan(State, Goal, Been_list, Moves, MaxTurns) :-
+plan(State, Goal, _, Moves, MaxTurns) :-
     % turns_used(Moves, UsedTurns),
     % UsedTurns #=< MaxTurns,
     move(State, Name, Preconditions, Actions),
@@ -72,7 +72,7 @@ plan(State, Goal, Been_list, Moves, MaxTurns) :-
     % not(member_state(Child_state, Been_list)),
     % stack(Child_state, Been_list, New_been_list),
     stack(Name, Moves, New_moves),
-    plan(Child_state, Goal, New_been_list, New_moves, MaxTurns).
+    plan(Child_state, Goal, _, New_moves, MaxTurns).
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
