@@ -27,10 +27,11 @@ count_drone_turns([load(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
 count_drone_turns([deliver(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
     count_drone_turns(T, Drone, OtherTurns),
     Turns is MoveTurns + OtherTurns.
-count_drone_max_turns(Moves, Drone, Turns) :-
+count_drone_max_turns(Moves, Drone, TurnsMinusOne) :-
     findall(T, count_drone_turns(Moves, Drone, T), TurnsList),
     sort(TurnsList, SortedTurns),
-    reverse(SortedTurns, [Turns|_]).
+    reverse(SortedTurns, [Turns|_]),
+    TurnsMinusOne is Turns - 1.
 turns_used(Moves, Turns) :-
     findall(T, (drone(Drone), count_drone_max_turns(Moves, Drone, T)), TurnsList),
     sort(TurnsList, SortedTurns),
@@ -198,9 +199,12 @@ move(
 ) :-
     order(Order, ProductList, _),
     member(Product, ProductList),
-    drone(Drone),
+    product(Product, _),
     nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
     nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
+    warehouse(Warehouse, _),
+    item(Item, Product),
+    drone(Drone),
     TurnsConsumed is Distance + 1.
 
 move(
@@ -214,8 +218,8 @@ move(
 ) :-
     order(Order, ProductList, _),
     member(Product, ProductList),
-    drone(Drone),
     item(Item, Product),
+    drone(Drone),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
     NewWeight is CurrentWeight - ProductWeight,
@@ -246,10 +250,3 @@ test :- go(
     [{{ initial_state }}],
     [{{ final_state }}]
 ).
-
-/** <examples> Your example queries go here, e.g.
-?- test.
-? - distance([at(drone1, coord(0, 0))], drone1, warehouse2, D).
-? - distance(order1, warehouse1, D).
-?- drone_load([at(drone1, coord(0, 0)), at(item1, warehouse1), weighs(drone1, 30), at(item2, warehouse2)], drone1, W).
-*/
