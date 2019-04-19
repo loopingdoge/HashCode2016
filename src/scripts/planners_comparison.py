@@ -27,7 +27,7 @@ def execution_score_time(problem_name, planner_name):
     t = threading.Thread(target=animate)
     t.start()
     start_time = datetime.now()
-    byte_output = check_output('python ./src/execute.py {} --planner {}'.format(problem_name, planner_name), shell=True)
+    byte_output = check_output('python ./src/scripts/execute.py {} --planner {}'.format(problem_name, planner_name), shell=True)
     end_time = datetime.now()
     elapsed_time = end_time - start_time
     animation_active = False
@@ -50,7 +50,7 @@ def execution_score_time(problem_name, planner_name):
 def main():
     parser = argparse.ArgumentParser(description="Hashcode 2016")
     parser.add_argument('problem', help='The problem name (inside ./in folder)')
-    parser.add_argument("--planner", help='The planner name (inside ./src folder)', default='planner')
+    parser.add_argument("--planner", help='The planner name (inside ./src/planners folder)', default='planner')
     parser.add_argument('--debug', help='Print debug messages', action='store_true')
     parser.add_argument('--quiet', help='Print only the score', action='store_true')
 
@@ -58,7 +58,7 @@ def main():
 
     problem_name = args.problem
 
-    planners = ['stupid_planner', 'stupid_drones_planner', 'planner',  'drones_planner', 'random_action_planner']
+    planners = ['drones_dfs', 'drones_shortest_random', 'drones_shortest',  'orders_dfs', 'orders_shortest_random', 'orders_shortest']
     # planners = ['planner',  'drones_planner', 'random_action_planner']
     planners_and_scores = []
 
