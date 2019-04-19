@@ -113,6 +113,22 @@ drone_coords([at(Drone, Order)|_], Drone, Coords) :- order(Order, _, Coords), !.
 drone_coords([_|T], Drone, Coords) :- drone_coords(T, Drone, Coords).
 
 %%
+% Optimization for the unification of the "load" action.
+% This will select an Order and a Product which are actually needed.
+%%
+requested_product_and_order([], _, _, _) :- fail, !.
+requested_product_and_order([need(NeedId, Product, Order)|_], Order, Product, NeedId) :- !.
+requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_and_order(T, Order, Product, NeedId).
+
+%%
+% Optimization for the unification of the "deliver" action.
+% This will select an Order and a Product which are actually needed.
+%%
+delivering_product_and_order([], _, _, _, _) :- fail, !.
+delivering_product_and_order([delivering(NeedId, Item, Order, Drone)|_], Order, Item, NeedId, Drone) :- !.
+delivering_product_and_order([_|T], Order, Item, NeedId, Drone) :- delivering_product_and_order(T, Order, Item, NeedId, Drone).
+
+%%
 % return the Euclidean distance between two coordinates
 %%
 distance(coord(X1, Y1), coord(X2, Y2), Distance) :-
@@ -161,6 +177,7 @@ move(
         add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), add(at(Drone, Warehouse))
     ]
 ) :-
+    requested_product_and_order(State, Order, Product, NeedId),
     order(Order, ProductList, _),
     member(Product, ProductList),
     product(Product, ProductWeight),
@@ -183,6 +200,7 @@ move(
         add(at(NeedId, Product, Order)), add(weighs(Drone, NewWeight)), add(at(Drone, Order))
     ]
 ) :-
+    delivering_product_and_order(State, Order, Item, NeedId, Drone),
     order(Order, ProductList, _),
     member(Product, ProductList),
     product(Product, ProductWeight),
