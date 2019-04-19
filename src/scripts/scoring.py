@@ -374,7 +374,8 @@ for t in range(MATRIX_SIZE_LIMIT):
         executeCommand(drones[d])
         setDroneBusy(drones[d])
 
-print('\nTurns used: {}'.format(usedTurns))
-print('\nScore: {}'.format(score))
 if turnsLimitReached:
     print('The score was limited by the number of input turns')
+    
+print('\nTurns used: {}'.format(usedTurns))
+print('\nScore: {}'.format(score))
