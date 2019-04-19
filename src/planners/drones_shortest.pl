@@ -1,8 +1,7 @@
 :- use_module(library(clpfd)).   %% Finite domain constraints
+
 %%
-%% STRIPS Planner with random selection of the action (load or deliver) to exec
-%% Improves the variety of drones used.
-%% load and deliver have the same probability.
+%% STRIPS Planner
 %%
 
 equal_set(S1, S2) :- subset(S1, S2), subset(S2, S1).
@@ -18,6 +17,26 @@ empty_stack([]).
 
 stack(E, S, [E|S]).
 
+count_drone_turns([], _, Turns) :- Turns is 0.
+count_drone_turns([_|T], Drone, Turns) :-
+    count_drone_turns(T, Drone, OtherTurns),
+    Turns is OtherTurns.
+count_drone_turns([load(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
+    count_drone_turns(T, Drone, OtherTurns),
+    Turns is MoveTurns + OtherTurns.
+count_drone_turns([deliver(Drone, _, _, MoveTurns)|T], Drone, Turns) :-
+    count_drone_turns(T, Drone, OtherTurns),
+    Turns is MoveTurns + OtherTurns.
+count_drone_max_turns(Moves, Drone, TurnsMinusOne) :-
+    findall(T, count_drone_turns(Moves, Drone, T), TurnsList),
+    sort(TurnsList, SortedTurns),
+    reverse(SortedTurns, [Turns|_]),
+    TurnsMinusOne is Turns - 1.
+turns_used(Moves, Turns) :-
+    findall(T, (drone(Drone), count_drone_max_turns(Moves, Drone, T)), TurnsList),
+    sort(TurnsList, SortedTurns),
+    reverse(SortedTurns, [Turns|_]).
+
 export_moves(Mov, _) :- empty_stack(Mov).
 export_moves(Mov, Stream) :-
     stack(E, Rest, Mov),
@@ -30,50 +49,39 @@ export_moves(Mov, Stream) :-
 %%
 plan(State, Goal, _, Moves, _) :-
     subset(Goal, State),
+    % turns_used(Moves, UsedTurns),
+    % UsedTurns #=< MaxTurns,
+    % write(State), nl,
     open('out/{{filename}}.cmds', write, Stream),
     export_moves(Moves, Stream),
     close(Stream)
     {{ debug }}.
+    % write('Turns: '), write(UsedTurns).
 
 %%
 % When the Goal state is a subset of the valued state
 % Use a defined action to move through the state-space
 %%
-plan(State, Goal, _, Moves, MaxTurns) :-
+plan(State, Goal, BeenList, Moves, MaxTurns) :-
+    % turns_used(Moves, UsedTurns),
+    % UsedTurns #=< MaxTurns,
+    bagof(Drone, drone(Drone), DroneList),
+    drones_move(DroneList, State, BeenList, Moves, ChildState, NewBeenList, NewMoves),
+    % not(member_state(ChildState, BeenList)),
+    plan(ChildState, Goal, NewBeenList, NewMoves, MaxTurns).
 
-    nb_getval(counterLoad, CounterValue), % number of items loaded by the drones at the moment
-
-%   write(CounterValue), nl,
-
-    MovesNames = [load, deliver],
-    random_member(Selection, MovesNames),
-    %write(Selection), nl,
-
-    % if
-    (
-      Selection == deliver % if random move is "deliver"
-        ->
-            (
-               CounterValue == 0 % if there is nothing to deliver exec a load
-                  ->
-                    %write("exec load"), nl,
-                    move(load, State, Name, Preconditions, Actions)
-                  ;
-                    %write("exec deliver"), nl,
-                    move(deliver, State, Name, Preconditions, Actions)
-            )
-        ;
-        % else try load, if it fail use deliver
-        move(_, State, Name, Preconditions, Actions)
-    ),
-
+drones_move([], State, BeenList, Moves, OutState, OutBeenList, OutMoves) :-
+    OutState = State,
+    OutBeenList = BeenList,
+    OutMoves = Moves.
+drones_move([Drone|Tail], State, BeenList, Moves, OutState, OutBeenList, OutMoves) :-
+    move(Drone, State, Name, Preconditions, Actions),
     conditions_met(Preconditions, State),
     write(Name), nl,
-    change_state(State, Actions, Child_state),
-    % not(member_state(Child_state, Been_list)),
-    % stack(Child_state, Been_list, New_been_list),
-    stack(Name, Moves, New_moves),
-    plan(Child_state, Goal, _, New_moves, MaxTurns).
+    change_state(State, Actions, ChildState),
+    stack(ChildState, BeenList, NewBeenList),
+    stack(Name, Moves, NewMoves),
+    drones_move(Tail, ChildState, NewBeenList, NewMoves, OutState, OutBeenList, OutMoves).
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
@@ -92,14 +100,6 @@ reverse_print_stack(S) :-
     stack(E, Rest, S),
     reverse_print_stack(Rest),
     write(E), nl.
-
-count_occurrences(List, Element, Counter) :-
-    not(member(Element, List)),
-    Counter is 0.
-count_occurrences(List, Element, Counter) :-
-    member(Element, List),
-    bagof(true, member(Element, List), ReducedList),
-    length(ReducedList, Counter).
 
 %%
 %% Utility predicates
@@ -121,10 +121,10 @@ drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Co
 drone_coords([at(Drone, Order)|_], Drone, Coords) :- order(Order, _, Coords), !.
 drone_coords([_|T], Drone, Coords) :- drone_coords(T, Drone, Coords).
 
-requested_product_and_order([], _, _, _) :- fail, !.
-requested_product_and_order([need(NeedId, Product, Order)|_], Order, Product, NeedId) :- !.
-requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_and_order(T, Order, Product, NeedId).
-
+%%
+% Optimization for the unification of the "deliver" action.
+% This will select an Order and a Product which are actually needed.
+%%
 delivering_product_and_order([], _, _, _, _) :- fail, !.
 delivering_product_and_order([delivering(NeedId, Item, Order, Drone)|_], Order, Item, NeedId, Drone) :- !.
 delivering_product_and_order([_|T], Order, Item, NeedId, Drone) :- delivering_product_and_order(T, Order, Item, NeedId, Drone).
@@ -155,38 +155,29 @@ distance(State, Drone, Warehouse, Distance) :-
 %%
 % returns the nearest warehouse from a order
 %%
-nearest_warehouse_from_order(State, Order, Product, Warehouse, Item) :-
+nearest_warehouse_from_drone(State, Drone, Product, Warehouse, Item, Distance) :-
     findall(
-        [Distance, Warehouses, ItemInW],
+        [Distances, Warehouses, ItemInW],
         (
-        	warehouse(Warehouses, _),
+            warehouse(Warehouses, _),
             item(ItemInW, Product),
             member(at(ItemInW, Warehouses), State),
-            distance(Order, Warehouses, Distance)
+            distance(State, Drone, Warehouses, Distances)
         ),
         DistanceList
     ),
-    sort(DistanceList, [[_, Warehouse, Item]|_]), !.
+    sort(DistanceList, [[Distance, Warehouse, Item]|_]), !.
 
-
-%%
-% returns the nearest drone from a warehouse
-%%
-nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight, Distance) :-
+nearest_order_from_drone(State, Drone, NeedId, Order, Product) :-
     findall(
-        [Dist, Drones, CurrentWeight, UpdatedWeight],
+        [Distance, NeedIdd, Orderr, Productt],
         (
-           drone(Drones),
-           drone_load(State, Drones, CurrentWeight),
-           product(Product, ProductWeight),
-           payload(MaxWeight),
-           CurrentWeight + ProductWeight #=< MaxWeight,
-           UpdatedWeight is CurrentWeight + ProductWeight,
-           distance(State, Drones, Warehouse, Dist)
+            member(need(NeedIdd, Productt, Orderr), State),
+            distance(State, Drone, Orderr, Distance)
         ),
         DistanceList
     ),
-    sort(DistanceList, [[Distance, Drone, OldWeight, NewWeight]|_]), !.
+    sort(DistanceList, [[_, NeedId, Order, Product]|_]), !.
 
 %%
 %% Actions
@@ -206,7 +197,7 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
 %%
 
 move(
-    load,
+    Drone,
     State,
     load(Drone, Product, Warehouse, TurnsConsumed),
     [at(Item, Warehouse), at(Drone, PrevDroneLocation), need(NeedId, Product, Order)],
@@ -215,15 +206,23 @@ move(
         add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), add(at(Drone, Warehouse))
     ]
 ) :-
-    requested_product_and_order(State, Order, Product, NeedId),
-    nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
-    nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
-    % drone_location(State, Drone, PrevDroneLocation),
-    TurnsConsumed is Distance + 1,
-    inc. % inc the number of items loaded by the drones at the moment
+    nearest_order_from_drone(State, Drone, NeedId, Order, Product),
+    order(Order, ProductList, _),
+    member(Product, ProductList),
+    product(Product, _),
+    nearest_warehouse_from_drone(State, Drone, Product, Warehouse, Item, Distance),
+    warehouse(Warehouse, _),
+    item(Item, Product),
+    drone(Drone),
+    drone_load(State, Drone, CurrentWeight),
+    payload(MaxWeight),
+    product(Product, ProductWeight),
+    CurrentWeight + ProductWeight #=< MaxWeight,
+    NewWeight is CurrentWeight + ProductWeight,
+    TurnsConsumed is Distance + 1.
 
 move(
-    deliver,
+    Drone,
     State,
     deliver(Drone, Product, Order, TurnsConsumed),
     [at(Item, Drone), at(Drone, PrevDroneLocation), delivering(NeedId, Item, Order, Drone)],
@@ -233,14 +232,24 @@ move(
     ]
 ) :-
     delivering_product_and_order(State, Order, Item, NeedId, Drone),
+    order(Order, ProductList, _),
+    member(Product, ProductList),
     item(Item, Product),
-    % drone_location(State, Drone, PrevDroneLocation),
+    drone(Drone),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
     NewWeight is CurrentWeight - ProductWeight,
     distance(State, Drone, Order, Distance),
-    TurnsConsumed is Distance + 1,
-    dec. % dec the number of items loaded by the drones at the moment
+    TurnsConsumed is Distance + 1.
+
+move(
+    Drone,
+    _,
+    wait(Drone),
+    [],
+    []
+) :-
+    drone(Drone).
 
 %%
 %% World Facts
@@ -262,23 +271,10 @@ coord(X, Y) :-
 
 go(S, G) :- plan(S, G, [S], [], {{ max_turns }}).
 
-test :-
-  nb_setval(counterLoad, 0),
-
-  go(
+test :- go(
     [{{ initial_state }}],
     [{{ final_state }}]
-  ).
-
-inc :-
-  nb_getval(counterLoad, C),
-  CNew is C + 1,
-  nb_setval(counterLoad, CNew).
-
-dec :-
-  nb_getval(counterLoad, C),
-  CNew is C - 1,
-  nb_setval(counterLoad, CNew).
+).
 
 /** <examples> Your example queries go here, e.g.
 ?- test.

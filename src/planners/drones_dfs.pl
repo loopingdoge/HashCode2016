@@ -76,8 +76,8 @@ drones_move([], State, BeenList, Moves, OutState, OutBeenList, OutMoves) :-
     OutMoves = Moves.
 drones_move([Drone|Tail], State, BeenList, Moves, OutState, OutBeenList, OutMoves) :-
     move(Drone, State, Name, Preconditions, Actions),
-    write(Name), nl,
     conditions_met(Preconditions, State),
+    write(Name), nl,
     change_state(State, Actions, ChildState),
     stack(ChildState, BeenList, NewBeenList),
     stack(Name, Moves, NewMoves),
@@ -122,6 +122,14 @@ drone_coords([at(Drone, Order)|_], Drone, Coords) :- order(Order, _, Coords), !.
 drone_coords([_|T], Drone, Coords) :- drone_coords(T, Drone, Coords).
 
 %%
+% Optimization for the unification of the "load" action.
+% This will select an Order and a Product which are actually needed.
+%%
+requested_product_and_order([], _, _, _) :- fail, !.
+requested_product_and_order([need(NeedId, Product, Order)|_], Order, Product, NeedId) :- !.
+requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_and_order(T, Order, Product, NeedId).
+
+%%
 % Optimization for the unification of the "deliver" action.
 % This will select an Order and a Product which are actually needed.
 %%
@@ -153,33 +161,6 @@ distance(State, Drone, Warehouse, Distance) :-
     distance(WarehouseCoord, DroneCoords, Distance).
 
 %%
-% returns the nearest warehouse from a order
-%%
-nearest_warehouse_from_drone(State, Drone, Product, Warehouse, Item, Distance) :-
-    findall(
-        [Distances, Warehouses, ItemInW],
-        (
-            warehouse(Warehouses, _),
-            item(ItemInW, Product),
-            member(at(ItemInW, Warehouses), State),
-            distance(State, Drone, Warehouses, Distances)
-        ),
-        DistanceList
-    ),
-    sort(DistanceList, [[Distance, Warehouse, Item]|_]), !.
-
-nearest_order_from_drone(State, Drone, NeedId, Order, Product) :-
-    findall(
-        [Distance, NeedIdd, Orderr, Productt],
-        (
-            member(need(NeedIdd, Productt, Orderr), State),
-            distance(State, Drone, Orderr, Distance)
-        ),
-        DistanceList
-    ),
-    sort(DistanceList, [[_, NeedId, Order, Product]|_]), !.
-
-%%
 %% Actions
 %%
 
@@ -206,11 +187,10 @@ move(
         add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), add(at(Drone, Warehouse))
     ]
 ) :-
-    nearest_order_from_drone(State, Drone, NeedId, Order, Product),
+    requested_product_and_order(State, Order, Product, NeedId),
     order(Order, ProductList, _),
     member(Product, ProductList),
     product(Product, _),
-    nearest_warehouse_from_drone(State, Drone, Product, Warehouse, Item, Distance),
     warehouse(Warehouse, _),
     item(Item, Product),
     drone(Drone),
@@ -219,6 +199,7 @@ move(
     product(Product, ProductWeight),
     CurrentWeight + ProductWeight #=< MaxWeight,
     NewWeight is CurrentWeight + ProductWeight,
+    distance(State, Drone, Warehouse, Distance),
     TurnsConsumed is Distance + 1.
 
 move(
@@ -275,10 +256,3 @@ test :- go(
     [{{ initial_state }}],
     [{{ final_state }}]
 ).
-
-/** <examples> Your example queries go here, e.g.
-?- test.
-? - distance([at(drone1, coord(0, 0))], drone1, warehouse2, D).
-? - distance(order1, warehouse1, D).
-?- drone_load([at(drone1, coord(0, 0)), at(item1, warehouse1), weighs(drone1, 30), at(item2, warehouse2)], drone1, W).
-*/

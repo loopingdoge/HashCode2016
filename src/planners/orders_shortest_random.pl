@@ -1,7 +1,9 @@
 :- use_module(library(clpfd)).   %% Finite domain constraints
 
 %%
-%% STRIPS Planner
+%% STRIPS Planner with random selection of the action (load or deliver) to exec
+%% Improves the variety of drones used.
+%% load and deliver have the same probability.
 %%
 
 equal_set(S1, S2) :- subset(S1, S2), subset(S2, S1).
@@ -62,26 +64,38 @@ plan(State, Goal, _, Moves, _) :-
 % When the Goal state is a subset of the valued state
 % Use a defined action to move through the state-space
 %%
-plan(State, Goal, BeenList, Moves, MaxTurns) :-
-    % turns_used(Moves, UsedTurns),
-    % UsedTurns #=< MaxTurns,
-    bagof(Drone, drone(Drone), DroneList),
-    drones_move(DroneList, State, BeenList, Moves, ChildState, NewBeenList, NewMoves),
-    % not(member_state(ChildState, BeenList)),
-    plan(ChildState, Goal, NewBeenList, NewMoves, MaxTurns).
+plan(State, Goal, _, Moves, MaxTurns) :-
+    nb_getval(counterLoad, CounterValue), % number of items loaded by the drones at the moment
+    % write(CounterValue), nl,
+    MovesNames = [load, deliver],
+    random_member(Selection, MovesNames),
+    %write(Selection), nl,
 
-drones_move([], State, BeenList, Moves, OutState, OutBeenList, OutMoves) :-
-    OutState = State,
-    OutBeenList = BeenList,
-    OutMoves = Moves.
-drones_move([Drone|Tail], State, BeenList, Moves, OutState, OutBeenList, OutMoves) :-
-    move(Drone, State, Name, Preconditions, Actions),
-    write(Name), nl,
+    % if
+    (
+      Selection == deliver % if random move is "deliver"
+        ->
+            (
+               CounterValue == 0 % if there is nothing to deliver exec a load
+                  ->
+                    %write("exec load"), nl,
+                    move(load, State, Name, Preconditions, Actions)
+                  ;
+                    %write("exec deliver"), nl,
+                    move(deliver, State, Name, Preconditions, Actions)
+            )
+        ;
+        % else try load, if it fail use deliver
+        move(_, State, Name, Preconditions, Actions)
+    ),
+
     conditions_met(Preconditions, State),
-    change_state(State, Actions, ChildState),
-    stack(ChildState, BeenList, NewBeenList),
-    stack(Name, Moves, NewMoves),
-    drones_move(Tail, ChildState, NewBeenList, NewMoves, OutState, OutBeenList, OutMoves).
+    write(Name), nl,
+    change_state(State, Actions, Child_state),
+    % not(member_state(Child_state, Been_list)),
+    % stack(Child_state, Been_list, New_been_list),
+    stack(Name, Moves, New_moves),
+    plan(Child_state, Goal, _, New_moves, MaxTurns).
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
@@ -161,6 +175,42 @@ distance(State, Drone, Warehouse, Distance) :-
     distance(WarehouseCoord, DroneCoords, Distance).
 
 %%
+% returns the nearest warehouse from a order
+%%
+nearest_warehouse_from_order(State, Order, Product, Warehouse, Item) :-
+    findall(
+        [Distance, Warehouses, ItemInW],
+        (
+        	warehouse(Warehouses, _),
+            item(ItemInW, Product),
+            member(at(ItemInW, Warehouses), State),
+            distance(Order, Warehouses, Distance)
+        ),
+        DistanceList
+    ),
+    sort(DistanceList, [[_, Warehouse, Item]|_]), !.
+
+
+%%
+% returns the nearest drone from a warehouse
+%%
+nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWeight, Distance) :-
+    findall(
+        [Dist, Drones, CurrentWeight, UpdatedWeight],
+        (
+           drone(Drones),
+           drone_load(State, Drones, CurrentWeight),
+           product(Product, ProductWeight),
+           payload(MaxWeight),
+           CurrentWeight + ProductWeight #=< MaxWeight,
+           UpdatedWeight is CurrentWeight + ProductWeight,
+           distance(State, Drones, Warehouse, Dist)
+        ),
+        DistanceList
+    ),
+    sort(DistanceList, [[Distance, Drone, OldWeight, NewWeight]|_]), !.
+
+%%
 %% Actions
 %%
 
@@ -178,7 +228,7 @@ distance(State, Drone, Warehouse, Distance) :-
 %%
 
 move(
-    Drone,
+    load,
     State,
     load(Drone, Product, Warehouse, TurnsConsumed),
     [at(Item, Warehouse), at(Drone, PrevDroneLocation), need(NeedId, Product, Order)],
@@ -191,19 +241,16 @@ move(
     order(Order, ProductList, _),
     member(Product, ProductList),
     product(Product, _),
+    nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
+    nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
     warehouse(Warehouse, _),
     item(Item, Product),
     drone(Drone),
-    drone_load(State, Drone, CurrentWeight),
-    payload(MaxWeight),
-    product(Product, ProductWeight),
-    CurrentWeight + ProductWeight #=< MaxWeight,
-    NewWeight is CurrentWeight + ProductWeight,
-    distance(State, Drone, Warehouse, Distance),
-    TurnsConsumed is Distance + 1.
+    TurnsConsumed is Distance + 1,
+    inc. % inc the number of items loaded by the drones at the moment
 
 move(
-    Drone,
+    deliver,
     State,
     deliver(Drone, Product, Order, TurnsConsumed),
     [at(Item, Drone), at(Drone, PrevDroneLocation), delivering(NeedId, Item, Order, Drone)],
@@ -221,16 +268,8 @@ move(
     product(Product, ProductWeight),
     NewWeight is CurrentWeight - ProductWeight,
     distance(State, Drone, Order, Distance),
-    TurnsConsumed is Distance + 1.
-
-move(
-    Drone,
-    _,
-    wait(Drone),
-    [],
-    []
-) :-
-    drone(Drone).
+    TurnsConsumed is Distance + 1,
+    dec. % dec the number of items loaded by the drones at the moment
 
 %%
 %% World Facts
@@ -252,7 +291,27 @@ coord(X, Y) :-
 
 go(S, G) :- plan(S, G, [S], [], {{ max_turns }}).
 
-test :- go(
+test :-
+  nb_setval(counterLoad, 0),
+
+  go(
     [{{ initial_state }}],
     [{{ final_state }}]
-).
+  ).
+
+inc :-
+  nb_getval(counterLoad, C),
+  CNew is C + 1,
+  nb_setval(counterLoad, CNew).
+
+dec :-
+  nb_getval(counterLoad, C),
+  CNew is C - 1,
+  nb_setval(counterLoad, CNew).
+
+/** <examples> Your example queries go here, e.g.
+?- test.
+? - distance([at(drone1, coord(0, 0))], drone1, warehouse2, D).
+? - distance(order1, warehouse1, D).
+?- drone_load([at(drone1, coord(0, 0)), at(item1, warehouse1), weighs(drone1, 30), at(item2, warehouse2)], drone1, W).
+*/
