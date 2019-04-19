@@ -48,31 +48,30 @@ export_moves(Mov, Stream) :-
 %%
 plan(State, Goal, _, Moves, _) :-
     subset(Goal, State),
-    %turns_used(Moves, UsedTurns),
-    %UsedTurns #=< MaxTurns,
-    %% write(State), nl,
+    % turns_used(Moves, UsedTurns),
+    % UsedTurns #=< MaxTurns,
+    % write(State), nl,
     open('out/{{filename}}.cmds', write, Stream),
     export_moves(Moves, Stream),
     close(Stream)
     {{ debug }}.
-    %write('Turns: '), write(UsedTurns).
+    % write('Turns: '), write(UsedTurns).
 
 %%
 % When the Goal state is a subset of the valued state
 % Use a defined action to move through the state-space
 %%
-plan(State, Goal, Been_list, Moves, MaxTurns) :-
-    %% write(State), nl, nl,
-    %% write(Been_list), nl,
+plan(State, Goal, _, Moves, MaxTurns) :-
     % turns_used(Moves, UsedTurns),
-    %UsedTurns #=< MaxTurns,
+    % UsedTurns #=< MaxTurns,
     move(State, Name, Preconditions, Actions),
     conditions_met(Preconditions, State),
+    write(Name), nl,
     change_state(State, Actions, Child_state),
-    not(member_state(Child_state, Been_list)),
-    stack(Child_state, Been_list, New_been_list),
+    % not(member_state(Child_state, Been_list)),
+    % stack(Child_state, Been_list, New_been_list),
     stack(Name, Moves, New_moves),
-    plan(Child_state, Goal, New_been_list, New_moves, MaxTurns).
+    plan(Child_state, Goal, _, New_moves, MaxTurns).
 
 change_state(S, [], S).
 change_state(S, [add(P)|T], S_new) :-
@@ -91,14 +90,6 @@ reverse_print_stack(S) :-
     stack(E, Rest, S),
     reverse_print_stack(Rest),
     write(E), nl.
-
-count_occurrences(List, Element, Counter) :-
-    not(member(Element, List)),
-    Counter is 0.
-count_occurrences(List, Element, Counter) :-
-    member(Element, List),
-    bagof(true, member(Element, List), ReducedList),
-    length(ReducedList, Counter).
 
 %%
 %% Utility predicates
@@ -119,28 +110,6 @@ drone_coords([at(Drone, coord(X, Y))|_], Drone, Coords) :- !, Coords = coord(X, 
 drone_coords([at(Drone, Warehouse)|_], Drone, Coords) :- warehouse(Warehouse, Coords), !.
 drone_coords([at(Drone, Order)|_], Drone, Coords) :- order(Order, _, Coords), !.
 drone_coords([_|T], Drone, Coords) :- drone_coords(T, Drone, Coords).
-
-drone_location([], _, _) :- fail.
-drone_location([at(Drone, coord(X, Y))|_], Drone, coord(X, Y)) :- !.
-drone_location([at(Drone, Warehouse)|_], Drone, Warehouse) :- warehouse(Warehouse, _), !.
-drone_location([at(Drone, Order)|_], Drone, Order) :- order(Order, _, _), !.
-drone_location([_|T], Drone, Location) :- drone_location(T, Drone, Location).
-
-requested_product_and_order([], _, _, _) :- fail, !.
-requested_product_and_order([need(NeedId, Product, Order)|_], Order, Product, NeedId) :- !.
-requested_product_and_order([_|T], Order, Product, NeedId) :- requested_product_and_order(T, Order, Product, NeedId).
-
-delivering_product_and_order([], _, _, _, _) :- fail, !.
-delivering_product_and_order([delivering(NeedId, Item, Order, Drone)|_], Order, Item, NeedId, Drone) :- !.
-delivering_product_and_order([_|T], Order, Item, NeedId, Drone) :- delivering_product_and_order(T, Order, Item, NeedId, Drone).
-
-%%
-% True if the order requires another product of that type
-%%
-need_to_load_more(State, Order, Product) :-
-    order(Order, _, _),
-    member(need(_, Product, Order), State),
-    !.
 
 %%
 % return the Euclidean distance between two coordinates
@@ -221,30 +190,32 @@ nearest_drone_from_warehouse(State, Warehouse, Product, Drone, OldWeight, NewWei
 move(
     State,
     load(Drone, Product, Warehouse, TurnsConsumed),
-    [at(Item, Warehouse), need(NeedId, Product, Order)],
+    [at(Item, Warehouse), at(Drone, PrevDroneLocation), need(NeedId, Product, Order)],
     [
         del(at(Item, Warehouse)), del(weighs(Drone, CurrentWeight)), del(need(NeedId, Product, Order)), del(at(Drone, PrevDroneLocation)),
         add(at(Item, Drone)), add(weighs(Drone, NewWeight)), add(delivering(NeedId, Item, Order, Drone)), add(at(Drone, Warehouse))
     ]
 ) :-
-    requested_product_and_order(State, Order, Product, NeedId),
+    order(Order, ProductList, _),
+    member(Product, ProductList),
+    drone(Drone),
     nearest_warehouse_from_order(State, Order, Product, Warehouse, Item),
     nearest_drone_from_warehouse(State, Warehouse, Product, Drone, CurrentWeight, NewWeight, Distance),
-    drone_location(State, Drone, PrevDroneLocation),
     TurnsConsumed is Distance + 1.
 
 move(
     State,
     deliver(Drone, Product, Order, TurnsConsumed),
-    [at(Item, Drone), delivering(NeedId, Item, Order, Drone)],
+    [at(Item, Drone), at(Drone, PrevDroneLocation), delivering(NeedId, Item, Order, Drone)],
     [
         del(at(Item, Drone)), del(weighs(Drone, CurrentWeight)), del(delivering(NeedId, Item, Order, Drone)), del(at(Drone, PrevDroneLocation)),
         add(at(NeedId, Product, Order)), add(weighs(Drone, NewWeight)), add(at(Drone, Order))
     ]
 ) :-
-    delivering_product_and_order(State, Order, Item, NeedId, Drone),
+    order(Order, ProductList, _),
+    member(Product, ProductList),
+    drone(Drone),
     item(Item, Product),
-    drone_location(State, Drone, PrevDroneLocation),
     drone_load(State, Drone, CurrentWeight),
     product(Product, ProductWeight),
     NewWeight is CurrentWeight - ProductWeight,
