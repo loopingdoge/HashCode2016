@@ -36,8 +36,11 @@ if os.path.isfile(outPlannerFilePath):
     if os.path.isfile(outPlannerSolutionFilePath):
         os.remove(outPlannerSolutionFilePath)
     quiet_print("\n- 2/4 STARTED PLANNING     (out/{}.pl -> out/{}.cmds)".format(problem_name, problem_name))
-
-    subprocess.call("swipl -G100g -T20g -L2g -l out/{}.pl -g test -t halt -q".format(problem_name).split())
+    if(debug):
+        subprocess.call("swipl -G100g -T20g -L2g -l out/{}.pl -g profile(test) -t halt -q".format(problem_name).split())
+        print("entered")
+    else:
+        subprocess.call("swipl -G100g -T20g -L2g -l out/{}.pl -g test -t halt -q".format(problem_name).split())
 else:
     print("ERROR: Can't generate the planner for the input problem")
     sys.exit(0)
