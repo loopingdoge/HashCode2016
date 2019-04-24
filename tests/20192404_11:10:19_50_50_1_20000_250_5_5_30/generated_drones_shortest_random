@@ -1,0 +1,301 @@
+('Rows \t\t', 50)
+('Cols \t\t', 50)
+('Drones \t\t', 1)
+('Turns \t\t', 20000)
+('Payload \t', 250)
+('Product types \t', 5)
+('Warehouses \t', 5)
+('Orders \t\t', 30)
+load(drone0,product3,warehouse4,9)
+load(drone0,product2,warehouse4,1)
+deliver(drone0,product2,order23,12)
+deliver(drone0,product3,order24,9)
+load(drone0,product4,warehouse4,8)
+deliver(drone0,product4,order21,15)
+load(drone0,product2,warehouse4,15)
+deliver(drone0,product2,order28,23)
+load(drone0,product0,warehouse1,19)
+deliver(drone0,product0,order28,19)
+load(drone0,product4,warehouse1,19)
+deliver(drone0,product4,order28,19)
+load(drone0,product0,warehouse1,19)
+deliver(drone0,product0,order1,20)
+load(drone0,product2,warehouse1,20)
+load(drone0,product3,warehouse1,1)
+deliver(drone0,product3,order8,8)
+deliver(drone0,product2,order1,22)
+load(drone0,product1,warehouse1,20)
+load(drone0,product1,warehouse1,1)
+deliver(drone0,product1,order23,10)
+load(drone0,product1,warehouse1,10)
+deliver(drone0,product1,order23,10)
+load(drone0,product3,warehouse1,10)
+deliver(drone0,product3,order27,10)
+load(drone0,product3,warehouse1,10)
+deliver(drone0,product3,order27,10)
+deliver(drone0,product1,order1,13)
+load(drone0,product0,warehouse1,20)
+deliver(drone0,product0,order26,14)
+load(drone0,product4,warehouse1,14)
+deliver(drone0,product4,order26,14)
+load(drone0,product4,warehouse1,14)
+deliver(drone0,product4,order27,10)
+load(drone0,product1,warehouse1,10)
+deliver(drone0,product1,order18,14)
+load(drone0,product0,warehouse0,21)
+deliver(drone0,product0,order13,18)
+load(drone0,product1,warehouse1,14)
+load(drone0,product2,warehouse1,1)
+deliver(drone0,product2,order4,11)
+deliver(drone0,product1,order13,19)
+load(drone0,product4,warehouse1,14)
+load(drone0,product3,warehouse1,1)
+deliver(drone0,product3,order22,17)
+load(drone0,product3,warehouse3,12)
+deliver(drone0,product3,order2,16)
+deliver(drone0,product4,order12,37)
+load(drone0,product3,warehouse0,11)
+deliver(drone0,product3,order12,11)
+load(drone0,product3,warehouse0,11)
+deliver(drone0,product3,order10,11)
+load(drone0,product0,warehouse0,11)
+deliver(drone0,product0,order15,5)
+load(drone0,product0,warehouse0,5)
+deliver(drone0,product0,order15,5)
+load(drone0,product4,warehouse0,5)
+load(drone0,product3,warehouse0,1)
+deliver(drone0,product3,order3,6)
+deliver(drone0,product4,order3,1)
+load(drone0,product0,warehouse0,6)
+deliver(drone0,product0,order3,6)
+load(drone0,product2,warehouse0,6)
+deliver(drone0,product2,order5,14)
+load(drone0,product4,warehouse0,14)
+deliver(drone0,product4,order5,14)
+load(drone0,product4,warehouse2,25)
+deliver(drone0,product4,order7,27)
+load(drone0,product0,warehouse0,17)
+deliver(drone0,product0,order14,11)
+load(drone0,product0,warehouse0,11)
+deliver(drone0,product0,order14,11)
+load(drone0,product4,warehouse2,16)
+deliver(drone0,product4,order14,16)
+load(drone0,product0,warehouse2,16)
+deliver(drone0,product0,order25,26)
+load(drone0,product0,warehouse2,26)
+deliver(drone0,product0,order25,26)
+load(drone0,product2,warehouse1,18)
+deliver(drone0,product2,order0,18)
+load(drone0,product1,warehouse1,18)
+load(drone0,product2,warehouse1,1)
+deliver(drone0,product2,order20,18)
+load(drone0,product1,warehouse1,18)
+deliver(drone0,product1,order9,20)
+deliver(drone0,product1,order0,19)
+load(drone0,product0,warehouse3,25)
+deliver(drone0,product0,order9,18)
+load(drone0,product3,warehouse3,18)
+load(drone0,product4,warehouse3,1)
+deliver(drone0,product4,order2,16)
+load(drone0,product1,warehouse3,16)
+deliver(drone0,product1,order2,16)
+load(drone0,product1,warehouse3,16)
+deliver(drone0,product1,order16,36)
+load(drone0,product2,warehouse1,36)
+deliver(drone0,product2,order17,22)
+deliver(drone0,product3,order9,40)
+load(drone0,product3,warehouse3,18)
+load(drone0,product4,warehouse4,12)
+deliver(drone0,product4,order11,39)
+deliver(drone0,product3,order6,9)
+load(drone0,product2,warehouse2,23)
+load(drone0,product1,warehouse2,1)
+deliver(drone0,product1,order29,11)
+deliver(drone0,product2,order19,13)
+load(drone0,product0,warehouse2,22)
+deliver(drone0,product0,order19,22)
+load(drone0,product3,warehouse2,22)
+deliver(drone0,product3,order11,15)
+load(drone0,product3,warehouse4,9)
+load(drone0,product2,warehouse4,1)
+deliver(drone0,product2,order23,12)
+deliver(drone0,product3,order24,9)
+load(drone0,product4,warehouse4,8)
+deliver(drone0,product4,order21,15)
+load(drone0,product2,warehouse4,15)
+deliver(drone0,product2,order28,23)
+load(drone0,product0,warehouse1,19)
+deliver(drone0,product0,order28,19)
+load(drone0,product4,warehouse1,19)
+deliver(drone0,product4,order28,19)
+load(drone0,product0,warehouse1,19)
+deliver(drone0,product0,order1,20)
+load(drone0,product2,warehouse1,20)
+load(drone0,product3,warehouse1,1)
+deliver(drone0,product3,order8,8)
+deliver(drone0,product2,order1,22)
+load(drone0,product1,warehouse1,20)
+load(drone0,product1,warehouse1,1)
+deliver(drone0,product1,order23,10)
+load(drone0,product1,warehouse1,10)
+deliver(drone0,product1,order23,10)
+load(drone0,product3,warehouse1,10)
+deliver(drone0,product3,order27,10)
+load(drone0,product3,warehouse1,10)
+deliver(drone0,product3,order27,10)
+deliver(drone0,product1,order1,13)
+load(drone0,product0,warehouse1,20)
+deliver(drone0,product0,order26,14)
+load(drone0,product4,warehouse1,14)
+deliver(drone0,product4,order26,14)
+load(drone0,product4,warehouse1,14)
+deliver(drone0,product4,order27,10)
+load(drone0,product1,warehouse1,10)
+deliver(drone0,product1,order18,14)
+load(drone0,product0,warehouse0,21)
+deliver(drone0,product0,order13,18)
+load(drone0,product1,warehouse1,14)
+load(drone0,product2,warehouse1,1)
+deliver(drone0,product2,order4,11)
+deliver(drone0,product1,order13,19)
+load(drone0,product4,warehouse1,14)
+load(drone0,product3,warehouse1,1)
+deliver(drone0,product3,order22,17)
+load(drone0,product3,warehouse3,12)
+deliver(drone0,product3,order2,16)
+deliver(drone0,product4,order12,37)
+load(drone0,product3,warehouse0,11)
+deliver(drone0,product3,order12,11)
+load(drone0,product3,warehouse0,11)
+deliver(drone0,product3,order10,11)
+load(drone0,product0,warehouse0,11)
+deliver(drone0,product0,order15,5)
+load(drone0,product0,warehouse0,5)
+deliver(drone0,product0,order15,5)
+load(drone0,product4,warehouse0,5)
+load(drone0,product3,warehouse0,1)
+deliver(drone0,product3,order3,6)
+deliver(drone0,product4,order3,1)
+load(drone0,product0,warehouse0,6)
+deliver(drone0,product0,order3,6)
+load(drone0,product2,warehouse0,6)
+deliver(drone0,product2,order5,14)
+load(drone0,product4,warehouse0,14)
+deliver(drone0,product4,order5,14)
+load(drone0,product4,warehouse2,25)
+deliver(drone0,product4,order7,27)
+load(drone0,product0,warehouse0,17)
+deliver(drone0,product0,order14,11)
+load(drone0,product0,warehouse0,11)
+deliver(drone0,product0,order14,11)
+load(drone0,product4,warehouse2,16)
+deliver(drone0,product4,order14,16)
+load(drone0,product0,warehouse2,16)
+deliver(drone0,product0,order25,26)
+load(drone0,product0,warehouse2,26)
+deliver(drone0,product0,order25,26)
+load(drone0,product2,warehouse1,18)
+deliver(drone0,product2,order0,18)
+load(drone0,product1,warehouse1,18)
+load(drone0,product2,warehouse1,1)
+deliver(drone0,product2,order20,18)
+load(drone0,product1,warehouse1,18)
+deliver(drone0,product1,order9,20)
+deliver(drone0,product1,order0,19)
+load(drone0,product0,warehouse3,25)
+deliver(drone0,product0,order9,18)
+load(drone0,product3,warehouse3,18)
+load(drone0,product4,warehouse3,1)
+deliver(drone0,product4,order2,16)
+load(drone0,product1,warehouse3,16)
+deliver(drone0,product1,order2,16)
+load(drone0,product1,warehouse3,16)
+deliver(drone0,product1,order16,36)
+load(drone0,product2,warehouse1,36)
+deliver(drone0,product2,order17,22)
+deliver(drone0,product3,order9,40)
+load(drone0,product3,warehouse3,18)
+load(drone0,product4,warehouse4,12)
+deliver(drone0,product4,order11,39)
+deliver(drone0,product3,order6,9)
+load(drone0,product2,warehouse2,23)
+load(drone0,product1,warehouse2,1)
+deliver(drone0,product1,order29,11)
+deliver(drone0,product2,order19,13)
+load(drone0,product0,warehouse2,22)
+deliver(drone0,product0,order19,22)
+load(drone0,product3,warehouse2,22)
+deliver(drone0,product3,order11,15)
+=====================================================================
+Total time: 0.655 seconds
+=====================================================================
+Predicate                       Box Entries =    Calls+Redos     Time
+=====================================================================
+lists:member_/3                      24,693 =   19,261+5,432    92.6%
+item/2                               18,828 =      593+18,235    1.4%
+member/2                             19,261 =   19,261+0         1.4%
+is/2                                  5,998 =    5,998+0         1.2%
+add_to_set/3                            770 =      385+385       0.7%
+memberchk/2                             908 =      908+0         0.7%
+>=/2                                 22,197 =   22,197+0         0.7%
+drone_coords/3                        8,704 =    5,528+3,176     0.5%
+nearest_warehouse_from_drone/6          170 =       85+85        0.5%
+$add_findall_bag/1                    5,592 =    5,592+0         0.5%
+$expand:remove_attributes/2              45 =       45+0         0.0%
+$expand:contains_functions/1            336 =      112+224       0.0%
+$expand:$including/0                     88 =       45+43        0.0%
+$expand:rename/2                        130 =       44+86        0.0%
+$expand:isect2/4                          4 =        4+0         0.0%
+$expand:expand_meta_arg/9                 1 =        1+0         0.0%
+$expand:compile_meta_call/4               1 =        1+0         0.0%
+$expand:f_pos/4                          48 =       48+0         0.0%
+expand_goal/4                             1 =        1+0         0.0%
+$expand:is_meta_call/3                  113 =      113+0         0.0%
+$expand:function/2                      222 =      222+0         0.0%
+$expand:same_source/3                     2 =        2+0         0.0%
+$expand:replace_functions/7             205 =      147+58        0.0%
+$expand:atomic_pos/2                      4 =        4+0         0.0%
+$expand:isect3/6                          7 =        7+0         0.0%
+
+Drones shortest random
+
+- 1/4 PARSING INPUT FILE   (in/generated.in -> out/generated.pl)
+
+- 2/4 STARTED PLANNING     (out/generated.pl -> out/generated.cmds)
+
+- 3/4 PARSING OUTPUT FILE  (out/generated.cmds -> out/generated.out)
+
+- 4/4 CALCULATING SCORE    (out/generated.out -> console)
+order 24 completed at turn 30, 100 points
+order 21 completed at turn 53, 100 points
+order 28 completed at turn 167, 100 points
+order 8 completed at turn 235, 99 points
+order 23 completed at turn 307, 99 points
+order 1 completed at turn 360, 99 points
+order 26 completed at turn 422, 98 points
+order 27 completed at turn 446, 98 points
+order 18 completed at turn 470, 98 points
+order 4 completed at turn 535, 98 points
+order 13 completed at turn 554, 98 points
+order 22 completed at turn 586, 98 points
+order 12 completed at turn 673, 97 points
+order 10 completed at turn 695, 97 points
+order 15 completed at turn 721, 97 points
+order 3 completed at turn 746, 97 points
+order 5 completed at turn 794, 97 points
+order 7 completed at turn 846, 96 points
+order 14 completed at turn 928, 96 points
+order 25 completed at turn 1022, 95 points
+order 20 completed at turn 1095, 95 points
+order 0 completed at turn 1152, 95 points
+order 2 completed at turn 1262, 94 points
+order 16 completed at turn 1314, 94 points
+order 17 completed at turn 1372, 94 points
+order 9 completed at turn 1412, 93 points
+order 6 completed at turn 1490, 93 points
+order 29 completed at turn 1525, 93 points
+order 19 completed at turn 1582, 93 points
+
+Turns used: 1604
+
+Score: 2801

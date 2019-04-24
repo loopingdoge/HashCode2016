@@ -1,4 +1,6 @@
 # python src/generate_input.py 50 50 10 500 250 5 3 3
+# rows, cols, drones, turns, payload, products, wharehouses, orders 
+
 from sys import argv, exit
 from random import randint
 
