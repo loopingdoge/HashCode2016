@@ -25,8 +25,7 @@ def main():
     date = datetime.datetime.now().strftime("%Y%d%m_%H:%M:%S")
     folder = "tests/" + date + "_" + problem_desc
     os.makedirs(folder)
-    # move the out/generated.pl and the in/generated.in in the new folder
-    copy("out/" + problem_name + ".pl", folder + "/")
+    # the in/generated.in in the new folder
     copy("in/" + problem_name + ".in", folder + "/")
 
     for planner_name in planners:
