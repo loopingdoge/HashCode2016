@@ -22,7 +22,7 @@ def main():
 
     planners_and_scores = []
 
-    date = datetime.datetime.now().strftime("%Y%d%m_%H:%M:%S")
+    date = datetime.datetime.now().strftime("%Y%m%d_%H.%M.%S")
     folder = "tests/" + date + "_" + problem_desc
     os.makedirs(folder)
     # the in/generated.in in the new folder
@@ -30,9 +30,9 @@ def main():
 
     for planner_name in planners:
         f = open(folder + "/" + problem_name + "_" + planner_name, "w")
-        f.write(datetime.datetime.now().strftime("%Y%d%m_%H:%M:%S") + "\n")
+        f.write(datetime.datetime.now().strftime("%Y%m%d_%H.%M.%S") + "\n")
         subprocess.call("timeout 3600 python ./src/scripts/execute.py {} --planner {} --debug".format(problem_name, planner_name).split(), stdout=f)
-        f.write(datetime.datetime.now().strftime("%Y%d%m_%H:%M:%S"))
+        f.write(datetime.datetime.now().strftime("%Y%m%d_%H.%M.%S"))
         f.close()
 
 if __name__ == '__main__':
